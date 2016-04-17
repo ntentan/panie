@@ -6,14 +6,14 @@
  * and open the template in the editor.
  */
 
-namespace ntentan\panie;
+namespace ntentan\panie\exceptions;
 
 /**
- * Description of ResolutionStrategyInterface
+ * Description of ResolutionException
  *
  * @author ekow
  */
-class ResolutionStrategyInterface
+class ResolutionException extends ContainerException
 {
     //put your code here
 }

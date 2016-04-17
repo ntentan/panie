@@ -9,37 +9,63 @@ namespace ntentan\panie;
  */
 class Container
 {
-    private $bindings = [];
+    private static $bindings = [];
+    private static $singletons = [];
     
     /**
      * 
      * @param string|\ReflectionClass $class
      * @return \ReflectionClass
      */
-    private static function getReflectionClass($class)
+    public static function getResolvedClassName($class, $argument = null)
     {
-        if(is_a($class, '\ReflectionClass')) {
+        if(isset(self::$bindings[$class])) {
+            $bound = self::$bindings[$class];
+            if(is_string($bound)) {
+                return new $bound;
+            } elseif (is_callable($bound)) {
+                return $bound($argument);
+            }
+        }
+        if(is_string($class) && class_exists($class)) {
             return $class;
-        } else if(is_string($class) && class_exists($class)) {
-            return new \ReflectionClass($class);
-        } else {
-            return null;
         }
+        return null;
     }
     
-    
-    public static function resolve($class, ...$args)
+    public static function bind($lose, $concrete)
     {
-        $reflection = self::getReflectionClass($class);
-        if($reflection === null) throw new ContainerException ("Could not resolve class $class");
-        $constructor = $reflection->getConstructor();
-        $parameters = $constructor->getParameters();
-        $instanceParameters = [];
-        foreach($parameters as $parameter) {
-            $instanceParameters[] = self::resolve($parameter->getClass());
-        }
-        return $reflection->newInstanceArgs($instanceParameters);
+        self::$bindings[$lose] = $concrete;
     }
+    
+    public static function singleton($type)
+    {
+        if(!isset(self::$singletons[$type])) {
+            self::$singletons[$type] = self::resolve($type);
+        }
+        return self::$singletons[$type];
+    }
+    
+    public static function resolve($type, $argument = null)
+    {
+        $resolvedClass = self::getResolvedClassName($type, $argument);
+        if($resolvedClass=== null) {
+            throw new exceptions\ResolutionException("Could not resolve class $type");
+        }
+        $reflection = new \ReflectionClass($resolvedClass);
+        $constructor = $reflection->getConstructor();
+        $instanceParameters = [];
+        
+        if($constructor != null) {
+            $parameters = $constructor->getParameters();
+            foreach($parameters as $parameter) {
+                $class = $parameter->getClass();
+                $instanceParameters[] = $class ? self::resolve($class, $argument) : null;
+            }            
+        }
+        return $reflection->newInstanceArgs($instanceParameters);        
+    }
+    
     
     public static function reset()
     {
