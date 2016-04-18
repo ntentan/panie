@@ -13,7 +13,7 @@ namespace ntentan\panie\exceptions;
  *
  * @author ekow
  */
-class ContainerException extends \Exception
+class InjectionContainerException extends \Exception
 {
     //put your code here
 }

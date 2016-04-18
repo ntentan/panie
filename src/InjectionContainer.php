@@ -7,7 +7,7 @@ namespace ntentan\panie;
  *
  * @author ekow
  */
-class Container
+class InjectionContainer
 {
     private static $bindings = [];
     private static $singletons = [];
