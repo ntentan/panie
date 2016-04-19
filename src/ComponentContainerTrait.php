@@ -10,22 +10,21 @@ namespace ntentan\panie;
 trait ComponentContainerTrait
 {
     protected $loadedComponents = [];
+    private static $resolverParameters = [];
     
-    private static $resolver;
-    
-    public function getComponent($component)
+    public static function setComponentResolverParameters($resolverParameters)
     {
-        if(isset($this->loadedComponents[$component])) {
-            return $this->loadedComponents[$component];
-        }
+        self::$resolverParameters = $resolverParameters;
     }
     
-    protected function loadComponent($component, $params = null)
+    protected function getComponentInstance($component)
     {
-        $resolver = self::$resolver;
-        $className = $resolver($component);
-        $componentInstance = new $className($params);
-        $this->loadedComponents[Text::camelize($component)] = $componentInstance;
-        return $componentInstance;
+        if(!isset($this->loadedComponents[$component])) {
+            $className = InjectionContainer::resolve(ComponentResolverInterface::class)
+                ->getComponentClass($component, self::$resolverParameters);
+            $componentInstance = InjectionContainer::resolve($className);
+            $this->loadedComponents[$component] = $componentInstance;
+        }
+        return $this->loadedComponents[$component];
     }
 }

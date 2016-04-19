@@ -50,7 +50,7 @@ class InjectionContainer
     {
         $resolvedClass = self::getResolvedClassName($type, $argument);
         if($resolvedClass=== null) {
-            throw new exceptions\ResolutionException("Could not resolve class $type");
+            throw new exceptions\ResolutionException("Could not resolve dependency $type");
         }
         $reflection = new \ReflectionClass($resolvedClass);
         $constructor = $reflection->getConstructor();
