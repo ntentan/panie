@@ -21,7 +21,7 @@ trait ComponentContainerTrait
     {
         if(!isset($this->loadedComponents[$component])) {
             $className = InjectionContainer::resolve(ComponentResolverInterface::class)
-                ->getComponentClass($component, self::$resolverParameters);
+                ->getComponentClassName($component, self::$resolverParameters);
             $componentInstance = InjectionContainer::resolve($className);
             $this->loadedComponents[$component] = $componentInstance;
         }

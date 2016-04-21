@@ -46,9 +46,9 @@ class InjectionContainer
         return self::$singletons[$type];
     }
     
-    public static function resolve($type, $argument = null)
+    public static function resolve($type)
     {
-        $resolvedClass = self::getResolvedClassName($type, $argument);
+        $resolvedClass = self::getResolvedClassName($type);
         if($resolvedClass=== null) {
             throw new exceptions\ResolutionException("Could not resolve dependency $type");
         }
@@ -60,7 +60,7 @@ class InjectionContainer
             $parameters = $constructor->getParameters();
             foreach($parameters as $parameter) {
                 $class = $parameter->getClass();
-                $instanceParameters[] = $class ? self::resolve($class, $argument) : null;
+                $instanceParameters[] = $class ? self::resolve($class) : null;
             }            
         }
         return $reflection->newInstanceArgs($instanceParameters);        

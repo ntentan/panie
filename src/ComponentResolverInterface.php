@@ -15,5 +15,5 @@ namespace ntentan\panie;
  */
 interface ComponentResolverInterface
 {
-    public function getComponentClass($component, $parameters);
+    public function getComponentClassName($component, $parameters);
 }
