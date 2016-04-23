@@ -53,6 +53,12 @@ class InjectionContainer
             throw new exceptions\ResolutionException("Could not resolve dependency $type");
         }
         $reflection = new \ReflectionClass($resolvedClass);
+        if($reflection->isAbstract()) {
+            throw new exceptions\ResolutionException(
+                "Abstract class {$reflection->getName()} cannot be instantiated. "
+                . "Please provide a binding to an implementation."
+            );
+        }
         $constructor = $reflection->getConstructor();
         $instanceParameters = [];
         
@@ -60,7 +66,7 @@ class InjectionContainer
             $parameters = $constructor->getParameters();
             foreach($parameters as $parameter) {
                 $class = $parameter->getClass();
-                $instanceParameters[] = $class ? self::resolve($class) : null;
+                $instanceParameters[] = $class ? self::resolve($class->getName()) : null;
             }            
         }
         return $reflection->newInstanceArgs($instanceParameters);        
