@@ -72,9 +72,19 @@ class InjectionContainer
         return $reflection->newInstanceArgs($instanceParameters);        
     }
     
-    
     public static function reset()
     {
+        self::resetBindings();
+        self::resetSingletons();
+    }
+    
+    public static function resetBindings()
+    {
         self::$bindings = [];
+    }
+    
+    public static function resetSingletons()
+    {
+        self::$singletons = [];
     }
 }
