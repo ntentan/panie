@@ -9,7 +9,7 @@ namespace ntentan\panie;
  */
 class InjectionContainer
 {
-    private static $bindings = [];
+    private static $bindings;
     private static $singletons = [];
     
     /**
@@ -17,25 +17,27 @@ class InjectionContainer
      * @param string|\ReflectionClass $class
      * @return \ReflectionClass
      */
-    public static function getResolvedClassName($class, $argument = null)
+    public static function getResolvedClassName($class)
     {
-        if(isset(self::$bindings[$class])) {
-            $bound = self::$bindings[$class];
-            if(is_string($bound)) {
-                return new $bound;
-            } elseif (is_callable($bound)) {
-                return $bound($argument);
-            }
+        $bound = null;
+        if(self::getBindings()->has($class)) {
+            $bound = self::$bindings->get($class);
         }
-        if(is_string($class) && class_exists($class)) {
-            return $class;
+        else if(is_string($class) && class_exists($class)) {
+            $bound = $class;
         }
-        return null;
+        return $bound;
     }
     
-    public static function bind($lose, $concrete)
+    private static function getBindings() 
     {
-        self::$bindings[$lose] = $concrete;
+        if(!self::$bindings) self::$bindings = new Bindings ();
+        return self::$bindings;
+    }
+    
+    public static function bind($lose)
+    {
+        return self::getBindings()->setActiveKey($lose);
     }
     
     public static function singleton($type)
@@ -80,7 +82,7 @@ class InjectionContainer
     
     public static function resetBindings()
     {
-        self::$bindings = [];
+        self::$bindings = null;
     }
     
     public static function resetSingletons()
