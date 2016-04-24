@@ -1,0 +1,17 @@
+language: php
+php:
+ - "5.5"
+ - "hhvm"
+ - "5.6"
+sudo: false
+matrix:
+  include:
+    - php: "7"
+      env: COVERAGE=yes
+ 
+before_script:
+ - composer install
+
+script: vendor/bin/phpunit --coverage-clover coverage.clover -c tests/config.xml
+after_script: if [ "$COVERAGE" == "yes" ]; then wget https://scrutinizer-ci.com/ocular.phar && php ocular.phar code-coverage:upload --format=php-clover coverage.clover; fi
+
