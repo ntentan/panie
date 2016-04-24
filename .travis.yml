@@ -12,6 +12,6 @@ matrix:
 before_script:
  - composer install
 
-script: vendor/bin/phpunit --coverage-clover coverage.clover -c tests/config.xml
+script: vendor/bin/phpunit --coverage-clover coverage.clover tests/cases
 after_script: if [ "$COVERAGE" == "yes" ]; then wget https://scrutinizer-ci.com/ocular.phar && php ocular.phar code-coverage:upload --format=php-clover coverage.clover; fi
 
