@@ -53,6 +53,28 @@ class BindingTest extends \PHPUnit_Framework_TestCase
         InjectionContainer::resolve(AbstractClass::class);
     }    
     
+    public function testMixedConstructorNulls()
+    {
+        InjectionContainer::bind(TestInterface::class)->to(TestClass::class);
+        $object = InjectionContainer::resolve(\ntentan\panie\tests\classes\MixedConstructor::class);
+        $this->assertInstanceOf(TestClass::class, $object->getInterface());
+        $this->assertNull($object->getString());
+        $this->assertNull($object->getNumber());
+    }
+    
+    public function testMixedConstructor()
+    {
+        InjectionContainer::bind(TestInterface::class)->to(TestClass::class);
+        $object = InjectionContainer::resolve(
+            \ntentan\panie\tests\classes\MixedConstructor::class,
+            ['string' => 'It is a string', 'number' => 2000]
+        );
+        $this->assertInstanceOf(TestClass::class, $object->getInterface());
+        $this->assertEquals('It is a string', $object->getString());
+        $this->assertEquals(2000, $object->getNumber());
+    }
+    
+    
     public function tearDown()
     {
         InjectionContainer::reset();

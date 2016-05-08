@@ -40,15 +40,15 @@ class InjectionContainer
         return self::getBindings()->setActiveKey($lose);
     }
     
-    public static function singleton($type)
+    public static function singleton($type, $constructorArguments = [])
     {
         if(!isset(self::$singletons[$type])) {
-            self::$singletons[$type] = self::resolve($type);
+            self::$singletons[$type] = self::resolve($type, $constructorArguments);
         }
         return self::$singletons[$type];
     }
     
-    public static function resolve($type)
+    public static function resolve($type, $constructorArguments = [])
     {
         $resolvedClass = self::getResolvedClassName($type);
         if($resolvedClass=== null) {
@@ -68,7 +68,11 @@ class InjectionContainer
             $parameters = $constructor->getParameters();
             foreach($parameters as $parameter) {
                 $class = $parameter->getClass();
-                $instanceParameters[] = $class ? self::resolve($class->getName()) : null;
+                if(isset($constructorArguments[$parameter->getName()])) {
+                    $instanceParameters[] = $constructorArguments[$parameter->getName()];
+                } else {
+                    $instanceParameters[] = $class ? self::resolve($class->getName()) : null;
+                }
             }            
         }
         return $reflection->newInstanceArgs($instanceParameters);        
