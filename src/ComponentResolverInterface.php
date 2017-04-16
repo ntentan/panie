@@ -13,7 +13,7 @@ namespace ntentan\panie;
  *
  * @author ekow
  */
-interface ComponentResolverInterface
-{
+interface ComponentResolverInterface {
+
     public function getComponentClassName($component, $parameters);
 }

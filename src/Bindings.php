@@ -2,29 +2,31 @@
 
 namespace ntentan\panie;
 
-class Bindings
-{
+class Bindings {
+
     private $bindings = [];
     private $activeKey;
-    
-    public function setActiveKey($activeKey)
-    {
+
+    public function setActiveKey($activeKey) {
         $this->activeKey = $activeKey;
         return $this;
     }
-    
-    public function to($value)
-    {
-        $this->bindings[$this->activeKey] = $value;
+
+    public function to($value) {
+        $this->bindings[$this->activeKey] = ['class' => $value];
+        return $this;
     }
-    
-    public function get($key)
-    {
+
+    public function get($key) {
         return $this->bindings[$key];
     }
-    
-    public function has($key)
-    {
+
+    public function has($key) {
         return isset($this->bindings[$key]);
     }
+    
+    public function asSingleton() {
+        $this->bindings[$this->activeKey]['singleton'] = true;
+    }
+
 }

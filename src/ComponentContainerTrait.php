@@ -7,24 +7,23 @@ namespace ntentan\panie;
  *
  * @author ekow
  */
-trait ComponentContainerTrait
-{
+trait ComponentContainerTrait {
+
     protected $loadedComponents = [];
     private static $resolverParameters = [];
-    
-    public static function setComponentResolverParameters($resolverParameters)
-    {
+
+    public static function setComponentResolverParameters($resolverParameters) {
         self::$resolverParameters = $resolverParameters;
     }
-    
-    protected function getComponentInstance($component)
-    {
-        if(!isset($this->loadedComponents[$component])) {
-            $className = InjectionContainer::resolve(ComponentResolverInterface::class)
-                ->getComponentClassName($component, self::$resolverParameters);
-            $componentInstance = InjectionContainer::resolve($className);
+
+    protected function getComponentInstance($container, $component) {
+        if (!isset($this->loadedComponents[$component])) {
+            $className = $container->resolve(ComponentResolverInterface::class)
+                    ->getComponentClassName($component, self::$resolverParameters);
+            $componentInstance = $container->resolve($className);
             $this->loadedComponents[$component] = $componentInstance;
         }
         return $this->loadedComponents[$component];
     }
+
 }
