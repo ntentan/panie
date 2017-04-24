@@ -27,10 +27,7 @@ class Container {
             $bound = $this->bindings->get($class);
         } else if (is_string($class) && class_exists($class)) {
             $bound = ['class' => $class];
-        }
-        if ($bound === null) {
-            throw new exceptions\ResolutionException("Could not resolve dependency $class");
-        }        
+        }     
         return $bound;
     }
 
@@ -51,7 +48,13 @@ class Container {
     }
     
     public function resolve($type, $constructorArguments = []) {
+        if($type === null) {
+            throw new exceptions\ResolutionException("Cannot resolve an empty type");
+        }
         $resolvedClass = $this->getResolvedClassName($type);
+        if ($resolvedClass['class'] === null) {
+            throw new exceptions\ResolutionException("Could not resolve dependency $type");
+        }           
         if(isset($resolvedClass['singleton'])) {
             return $this->getSingletonInstance($type, $resolvedClass['class'], $constructorArguments);
         } else {
