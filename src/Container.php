@@ -80,7 +80,9 @@ class Container {
                 $class = $parameter->getClass();
                 if (isset($constructorArguments[$parameter->getName()])) {
                     $instanceParameters[] = $constructorArguments[$parameter->getName()];
-                } else {
+                } else if($class == self::class){
+                    $instanceParameters[] = $this;
+                } else {                    
                     $instanceParameters[] = $class ? $this->resolve($class->getName()) : null;
                 }
             }
