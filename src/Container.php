@@ -50,7 +50,7 @@ class Container {
     public function resolve($type, $constructorArguments = []) {
         if($type === null) {
             throw new exceptions\ResolutionException("Cannot resolve an empty type");
-        }
+        } 
         $resolvedClass = $this->getResolvedClassName($type);
         if ($resolvedClass['class'] === null) {
             throw new exceptions\ResolutionException("Could not resolve dependency $type");
@@ -63,7 +63,9 @@ class Container {
     }
 
     public function getInstance($className, $constructorArguments = []) {
-        
+        if(is_object($className)) {
+            return $className;
+        }
         $reflection = new \ReflectionClass($className);
         if ($reflection->isAbstract()) {
             throw new exceptions\ResolutionException(
@@ -78,12 +80,13 @@ class Container {
             $parameters = $constructor->getParameters();
             foreach ($parameters as $parameter) {
                 $class = $parameter->getClass();
+                $className = $class ? $class->getName() : null;
                 if (isset($constructorArguments[$parameter->getName()])) {
                     $instanceParameters[] = $constructorArguments[$parameter->getName()];
-                } else if($class == self::class){
+                } else if($className == self::class){
                     $instanceParameters[] = $this;
                 } else {                    
-                    $instanceParameters[] = $class ? $this->resolve($class->getName()) : null;
+                    $instanceParameters[] = $className ? $this->resolve($className) : null;
                 }
             }
         }
