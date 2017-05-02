@@ -31,8 +31,12 @@ class Container {
         return $bound;
     }
 
-    public function bind($lose) {
-        return $this->bindings->setActiveKey($lose);
+    public function bind($type) {
+        return $this->bindings->setActiveKey($type);
+    }
+    
+    public function unbind($type) {
+        $this->bindings->remove($type);
     }
 
     public function singleton($type, $constructorArguments = []) {

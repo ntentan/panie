@@ -28,5 +28,9 @@ class Bindings {
     public function asSingleton() {
         $this->bindings[$this->activeKey]['singleton'] = true;
     }
+    
+    public function remove($type) {
+        unset($this->bindings[$type]);
+    }
 
 }
