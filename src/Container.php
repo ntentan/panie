@@ -26,7 +26,7 @@ class Container {
         if ($this->bindings->has($class)) {
             $bound = $this->bindings->get($class);
         } else if (is_string($class) && class_exists($class)) {
-            $bound = ['class' => $class];
+            $bound = ['binding' => $class];
         }     
         return $bound;
     }
@@ -40,7 +40,7 @@ class Container {
     }
 
     public function singleton($type, $constructorArguments = []) {
-        $resolvedClass = $this->getResolvedClassName($type)['class'];
+        $resolvedClass = $this->getResolvedClassName($type)['binding'];
         return $this->getSingletonInstance($type, $resolvedClass, $constructorArguments);
     }
     
@@ -56,20 +56,23 @@ class Container {
             throw new exceptions\ResolutionException("Cannot resolve an empty type");
         } 
         $resolvedClass = $this->getResolvedClassName($type);
-        if ($resolvedClass['class'] === null) {
+        if ($resolvedClass['binding'] === null) {
             throw new exceptions\ResolutionException("Could not resolve dependency $type");
         }           
         if(isset($resolvedClass['singleton'])) {
-            return $this->getSingletonInstance($type, $resolvedClass['class'], $constructorArguments);
+            return $this->getSingletonInstance($type, $resolvedClass['binding'], $constructorArguments);
         } else {
-            return $this->getInstance($resolvedClass['class'], $constructorArguments);
+            return $this->getInstance($resolvedClass['binding'], $constructorArguments);
         }
     }
 
     public function getInstance($className, $constructorArguments = []) {
+        if (is_callable($className)) {
+            return $className($this);
+        }
         if(is_object($className)) {
             return $className;
-        }
+        } 
         $reflection = new \ReflectionClass($className);
         if ($reflection->isAbstract()) {
             throw new exceptions\ResolutionException(

@@ -13,7 +13,7 @@ class Bindings {
     }
 
     public function to($value) {
-        $this->bindings[$this->activeKey] = ['class' => $value];
+        $this->bindings[$this->activeKey] = ['binding' => $value];
         return $this;
     }
 
