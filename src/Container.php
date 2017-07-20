@@ -35,6 +35,14 @@ class Container {
         return $this->bindings->setActiveKey($type);
     }
     
+    public function has($type) {
+        return $this->bindings->has($type);
+    }
+    
+    public function setup($bindings, $replace = true) {
+        $this->bindings->merge($bindings, $replace);
+    }
+        
     public function unbind($type) {
         $this->bindings->remove($type);
     }
@@ -59,11 +67,29 @@ class Container {
         if ($resolvedClass['binding'] === null) {
             throw new exceptions\ResolutionException("Could not resolve dependency $type");
         }           
-        if(isset($resolvedClass['singleton'])) {
+        if($resolvedClass['singleton'] ?? false) {
             return $this->getSingletonInstance($type, $resolvedClass['binding'], $constructorArguments);
         } else {
             return $this->getInstance($resolvedClass['binding'], $constructorArguments);
         }
+    }
+    
+    private function getConstructorArguments($constructor, $constructorArguments)
+    {
+        $argumentValues = [];
+        $parameters = $constructor->getParameters();
+        foreach ($parameters as $parameter) {
+            $class = $parameter->getClass();
+            $className = $class ? $class->getName() : null;
+            if (isset($constructorArguments[$parameter->getName()])) {
+                $argumentValues[] = $constructorArguments[$parameter->getName()];
+            } else if($className == self::class){
+                $argumentValues[] = $this;
+            } else {                    
+                $argumentValues[] = $className ? $this->resolve($className) : null;
+            }
+        }
+        return $argumentValues;
     }
 
     public function getInstance($className, $constructorArguments = []) {
@@ -81,23 +107,7 @@ class Container {
             );
         }
         $constructor = $reflection->getConstructor();
-        $instanceParameters = [];
-
-        if ($constructor != null) {
-            $parameters = $constructor->getParameters();
-            foreach ($parameters as $parameter) {
-                $class = $parameter->getClass();
-                $className = $class ? $class->getName() : null;
-                if (isset($constructorArguments[$parameter->getName()])) {
-                    $instanceParameters[] = $constructorArguments[$parameter->getName()];
-                } else if($className == self::class){
-                    $instanceParameters[] = $this;
-                } else {                    
-                    $instanceParameters[] = $className ? $this->resolve($className) : null;
-                }
-            }
-        }
-        return $reflection->newInstanceArgs($instanceParameters);
+        return $reflection->newInstanceArgs($constructor ? $this->getConstructorArguments($constructor, $constructorArguments) : []);
     }
 
 }
