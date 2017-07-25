@@ -6,8 +6,9 @@ use ntentan\panie\tests\classes\TestClass;
 use ntentan\panie\Container;
 use ntentan\panie\tests\classes\Constructor;
 use ntentan\panie\tests\classes\AbstractClass;
+use PHPUnit\Framework\TestCase;
 
-class BindingTest extends \PHPUnit_Framework_TestCase
+class BindingTest extends TestCase
 {
     private $container;
 
