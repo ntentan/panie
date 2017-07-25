@@ -4,6 +4,7 @@ dist: precise
 sudo: false
 php:
  - "7.1"
+env: COVERAGE=yes
  
 before_script:
  - composer install
