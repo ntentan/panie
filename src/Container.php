@@ -7,12 +7,14 @@ namespace ntentan\panie;
  *
  * @author ekow
  */
-class Container {
+class Container
+{
 
     private $bindings;
     private $singletons = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->bindings = new Bindings();
     }
 
@@ -21,59 +23,67 @@ class Container {
      * @param string|\ReflectionClass $class
      * @return \ReflectionClass
      */
-    public function getResolvedClassName($class) {
+    public function getResolvedClassName($class)
+    {
         $bound = null;
         if ($this->bindings->has($class)) {
             $bound = $this->bindings->get($class);
         } else if (is_string($class) && class_exists($class)) {
             $bound = ['binding' => $class];
-        }     
+        }
         return $bound;
     }
 
-    public function bind($type) {
+    public function bind($type)
+    {
         return $this->bindings->setActiveKey($type);
     }
-    
-    public function has($type) {
+
+    public function has($type)
+    {
         return $this->bindings->has($type);
     }
-    
-    public function setup($bindings, $replace = true) {
+
+    public function setup($bindings, $replace = true)
+    {
         $this->bindings->merge($bindings, $replace);
     }
-        
-    public function unbind($type) {
+
+    public function unbind($type)
+    {
         $this->bindings->remove($type);
     }
 
-    public function singleton($type, $constructorArguments = []) {
+    public function singleton($type, $constructorArguments = [])
+    {
         $resolvedClass = $this->getResolvedClassName($type)['binding'];
         return $this->getSingletonInstance($type, $resolvedClass, $constructorArguments);
     }
-    
-    private function getSingletonInstance($type, $class,  $constructorArguments) {
+
+    private function getSingletonInstance($type, $class, $constructorArguments)
+    {
         if (!isset($this->singletons[$type])) {
             $this->singletons[$type] = $this->getInstance($class, $constructorArguments);
         }
-        return $this->singletons[$type];        
+        return $this->singletons[$type];
     }
-    
-    public function resolve($type, $constructorArguments = []) {
-        if($type === null) {
+
+    public function resolve($type, $constructorArguments = [])
+    {
+        if ($type === null) {
             throw new exceptions\ResolutionException("Cannot resolve an empty type");
-        } 
+        }
         $resolvedClass = $this->getResolvedClassName($type);
         if ($resolvedClass['binding'] === null) {
             throw new exceptions\ResolutionException("Could not resolve dependency $type");
-        }           
-        if($resolvedClass['singleton'] ?? false) {
+        }
+        if ($resolvedClass['singleton'] ?? false) {
             return $this->getSingletonInstance($type, $resolvedClass['binding'], $constructorArguments);
         } else {
             return $this->getInstance($resolvedClass['binding'], $constructorArguments);
         }
     }
-    
+
     private function getConstructorArguments($constructor, $constructorArguments)
     {
         $argumentValues = [];
@@ -83,22 +93,23 @@ class Container {
             $className = $class ? $class->getName() : null;
             if (isset($constructorArguments[$parameter->getName()])) {
                 $argumentValues[] = $constructorArguments[$parameter->getName()];
-            } else if($className == self::class){
+            } else if ($className == self::class) {
                 $argumentValues[] = $this;
-            } else {                    
+            } else {
                 $argumentValues[] = $className ? $this->resolve($className) : null;
             }
         }
         return $argumentValues;
     }
 
-    public function getInstance($className, $constructorArguments = []) {
+    public function getInstance($className, $constructorArguments = [])
+    {
         if (is_callable($className)) {
             return $className($this);
         }
-        if(is_object($className)) {
+        if (is_object($className)) {
             return $className;
-        } 
+        }
         $reflection = new \ReflectionClass($className);
         if ($reflection->isAbstract()) {
             throw new exceptions\ResolutionException(
