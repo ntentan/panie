@@ -74,8 +74,6 @@ class Container
             $className = $class ? $class->getName() : null;
             if (isset($constructorArguments[$parameter->getName()])) {
                 $argumentValues[] = $constructorArguments[$parameter->getName()];
-            } else if ($className == self::class) {
-                $argumentValues[] = $this;
             } else {
                 $argumentValues[] = $className ? $this->resolve($className) : null;
             }
