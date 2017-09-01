@@ -26,9 +26,19 @@ class Bindings
         return $this;
     }
 
+    public function call($method, $parameters = [])
+    {
+        $this->bindings[$this->activeKey]['calls'][] = ['setter' => $method, 'parameters' => $parameters];
+    }
+
+    public function setProperty($property, $binding)
+    {
+        $this->bindings[$this->activeKey]['sets'][] = ['property' => $property, 'binding' => $binding];
+    }
+
     public function to($value)
     {
-        $this->bindings[$this->activeKey] = ['binding' => $value];
+        $this->bindings[$this->activeKey] = ['binding' => $value, 'calls'=>[], 'properties' => []];
         return $this;
     }
 
@@ -42,17 +52,7 @@ class Bindings
         return isset($this->bindings[$key]);
     }
 
-    public function asSingleton()
-    {
-        $this->bindings[$this->activeKey]['singleton'] = true;
-    }
-
-    public function remove($type)
-    {
-        unset($this->bindings[$type]);
-    }
-
-    public function merge($bindings, $replace)
+    public function merge($bindings, $replace = true)
     {
         foreach($bindings as $key => $binding) {
             if(isset($this->bindings[$key]) && !$replace) {

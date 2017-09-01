@@ -34,16 +34,6 @@ class BindingTest extends TestCase
         $this->assertInstanceOf(TestInterface::class, $object->getInterface());
     }
 
-    public function testSingleton()
-    {
-        $this->container->bind(TestInterface::class)->to(TestClass::class);
-        $object1 = $this->container->singleton(TestInterface::class);
-        $object2 = $this->container->singleton(TestInterface::class);
-        $object1->setValue(2);
-        $this->assertEquals(2, $object1->getValue());
-        $this->assertEquals(2, $object2->getValue());
-    }
-
     /**
      * @expectedException \ntentan\panie\exceptions\ResolutionException
      */
