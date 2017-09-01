@@ -22,6 +22,10 @@ class BindingTest extends TestCase
         $object = $this->container->resolve(TestInterface::class);
         $this->assertInstanceOf(TestClass::class, $object);
         $this->assertInstanceOf(TestInterface::class, $object);
+        $otherobject = $this->container->resolve(TestInterface::class);
+        $object->setValue(2);
+        $this->assertEquals(2, $object->getValue());
+        $this->assertNotEquals(2, $otherobject->getValue());
     }
 
     public function testConstructorBinding()
@@ -33,6 +37,16 @@ class BindingTest extends TestCase
         $this->assertInstanceOf(TestClass::class, $object->getInterface());
         $this->assertInstanceOf(TestInterface::class, $object->getInterface());
     }
+
+    public function testSingleton()
+    {
+        $this->container->bind(TestInterface::class)->to(TestClass::class)->asSingleton();
+        $object1 = $this->container->resolve(TestInterface::class);
+        $object2 = $this->container->resolve(TestInterface::class);
+        $object1->setValue(2);
+        $this->assertEquals(2, $object1->getValue());
+        $this->assertEquals(2, $object2->getValue());
+    }    
 
     /**
      * @expectedException \ntentan\panie\exceptions\ResolutionException

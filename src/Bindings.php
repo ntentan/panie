@@ -52,6 +52,11 @@ class Bindings
         return isset($this->bindings[$key]);
     }
 
+    public function asSingleton()
+    {
+        $this->bindings[$this->activeKey]['singleton'] = true;
+    }    
+
     public function merge($bindings, $replace = true)
     {
         foreach($bindings as $key => $binding) {

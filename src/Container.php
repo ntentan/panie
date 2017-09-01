@@ -58,8 +58,11 @@ class Container
         if ($resolvedClass['binding'] === null) {
             throw new exceptions\ResolutionException("Could not resolve dependency $type");
         }
-        $instance = $this->getInstance($resolvedClass['binding'], $constructorArguments);
-        return $instance;
+        if ($resolvedClass['singleton'] ?? false) {
+            return $this->getSingletonInstance($type, $resolvedClass['binding'], $constructorArguments);
+        } else {
+            return $this->getInstance($resolvedClass['binding'], $constructorArguments);
+        }
     }
 
     private function getConstructorArguments($constructor, $constructorArguments)
@@ -80,6 +83,14 @@ class Container
         return $argumentValues;
     }
 
+    private function getSingletonInstance($type, $class, $constructorArguments)
+    {
+        if (!isset($this->singletons[$type])) {
+            $this->singletons[$type] = $this->getInstance($class, $constructorArguments);
+        }
+        return $this->singletons[$type];
+    }
+
     public function getInstance($className, $constructorArguments = [])
     {
         if (is_callable($className)) {
@@ -96,6 +107,7 @@ class Container
             );
         }
         $constructor = $reflection->getConstructor();
-        return $reflection->newInstanceArgs($constructor ? $this->getConstructorArguments($constructor, $constructorArguments) : []);
+        $instance = $reflection->newInstanceArgs($constructor ? $this->getConstructorArguments($constructor, $constructorArguments) : []);
+        return $instance;
     }
 }
