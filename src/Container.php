@@ -23,7 +23,7 @@ class Container
      * @param string|\ReflectionClass $class
      * @return \ReflectionClass
      */
-    public function getResolvedClassName($class)
+    private function getResolvedClassName($class)
     {
         $bound = null;
         if ($this->bindings->has($class)) {
@@ -44,9 +44,9 @@ class Container
         return $this->bindings->has($type);
     }
 
-    public function setup($bindings, $replace = true)
+    public function setup($bindings)
     {
-        $this->bindings->merge($bindings, $replace);
+        $this->bindings->merge($bindings);
     }
 
     public function resolve($type, $constructorArguments = [])
@@ -59,10 +59,17 @@ class Container
             throw new exceptions\ResolutionException("Could not resolve dependency $type");
         }
         if ($resolvedClass['singleton'] ?? false) {
-            return $this->getSingletonInstance($type, $resolvedClass['binding'], $constructorArguments);
+            $instance = $this->getSingletonInstance($type, $resolvedClass['binding'], $constructorArguments);
         } else {
-            return $this->getInstance($resolvedClass['binding'], $constructorArguments);
+            $instance = $this->getInstance($resolvedClass['binding'], $constructorArguments);
         }
+        
+        foreach($resolvedClass['calls'] ?? [] as $method => $parameters) {
+            $method = new \ReflectionMethod($instance, $method);
+            $method->invokeArgs($instance, $this->getConstructorArguments($method, $parameters));
+        }
+        
+        return $instance;
     }
 
     private function getConstructorArguments($constructor, $constructorArguments)
@@ -89,13 +96,10 @@ class Container
         return $this->singletons[$type];
     }
 
-    public function getInstance($className, $constructorArguments = [])
+    private function getInstance($className, $constructorArguments = [])
     {
         if (is_callable($className)) {
             return $className($this);
-        }
-        if (is_object($className)) {
-            return $className;
         }
         $reflection = new \ReflectionClass($className);
         if ($reflection->isAbstract()) {
@@ -105,7 +109,6 @@ class Container
             );
         }
         $constructor = $reflection->getConstructor();
-        $instance = $reflection->newInstanceArgs($constructor ? $this->getConstructorArguments($constructor, $constructorArguments) : []);
-        return $instance;
+        return $reflection->newInstanceArgs($constructor ? $this->getConstructorArguments($constructor, $constructorArguments) : []);
     }
 }
