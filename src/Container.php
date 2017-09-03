@@ -66,21 +66,29 @@ class Container
         
         foreach($resolvedClass['calls'] ?? [] as $method => $parameters) {
             $method = new \ReflectionMethod($instance, $method);
-            $method->invokeArgs($instance, $this->getConstructorArguments($method, $parameters));
+            $method->invokeArgs($instance, $this->getMethodArguments($method, $parameters));
         }
         
         return $instance;
     }
 
-    private function getConstructorArguments($constructor, $constructorArguments)
+    private function resolveArgument($argument, $class)
+    {
+        if($class && is_string($argument)) {
+            return $this->resolve($argument);
+        }
+        return $argument;
+    }
+
+    private function getMethodArguments($method, $methodArguments)
     {
         $argumentValues = [];
-        $parameters = $constructor->getParameters();
+        $parameters = $method->getParameters();
         foreach ($parameters as $parameter) {
             $class = $parameter->getClass();
             $className = $class ? $class->getName() : null;
-            if (isset($constructorArguments[$parameter->getName()])) {
-                $argumentValues[] = $constructorArguments[$parameter->getName()];
+            if (isset($methodArguments[$parameter->getName()])) {
+                $argumentValues[] = $this->resolveArgument($methodArguments[$parameter->getName()], $className);
             } else {
                 $argumentValues[] = $className ? $this->resolve($className) : null;
             }
@@ -109,6 +117,6 @@ class Container
             );
         }
         $constructor = $reflection->getConstructor();
-        return $reflection->newInstanceArgs($constructor ? $this->getConstructorArguments($constructor, $constructorArguments) : []);
+        return $reflection->newInstanceArgs($constructor ? $this->getMethodArguments($constructor, $constructorArguments) : []);
     }
 }
