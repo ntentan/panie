@@ -28,7 +28,7 @@ class Bindings
 
     public function call($method, $parameters = [])
     {
-        $this->bindings[$this->activeKey]['calls'][$method] = $parameters;
+        $this->bindings[$this->activeKey]['calls'][] = [$method, $parameters];
     }
 
     public function setProperty($property, $binding)

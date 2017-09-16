@@ -64,9 +64,9 @@ class Container
             $instance = $this->getInstance($resolvedClass['binding'], $constructorArguments);
         }
         
-        foreach($resolvedClass['calls'] ?? [] as $method => $parameters) {
-            $method = new \ReflectionMethod($instance, $method);
-            $method->invokeArgs($instance, $this->getMethodArguments($method, $parameters));
+        foreach($resolvedClass['calls'] ?? [] as $calls) {
+            $method = new \ReflectionMethod($instance, $calls[0]);
+            $method->invokeArgs($instance, $this->getMethodArguments($method, $calls[1]));
         }
         
         return $instance;
