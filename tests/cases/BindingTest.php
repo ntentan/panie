@@ -84,4 +84,52 @@ class BindingTest extends TestCase
         $this->assertEquals('It is a string', $object->getString());
         $this->assertEquals(2000, $object->getNumber());
     }
+
+    public function testHas()
+    {
+        $this->container->bind(TestInterface::class)->to(TestClass::class);
+        $this->assertEquals(false, $this->container->has(Unknown::class));
+        $this->assertEquals(true, $this->container->has(TestInterface::class));
+    }
+
+    public function testSetup()
+    {
+        $this->container->setup([TestInterface::class => TestClass::class]);
+        $object = $this->container->resolve(TestClass::class);
+        $this->assertInstanceOf(TestClass::class, $object);
+    }
+
+    public function testSetupSingleton()
+    {
+        $this->container->setup([TestInterface::class=>[TestClass::class, 'singleton' => true]]);
+        $object1 = $this->container->resolve(TestInterface::class);
+        $object2 = $this->container->resolve(TestInterface::class);
+        $object1->setValue(2);
+        $this->assertEquals(2, $object1->getValue());
+        $this->assertEquals(2, $object2->getValue());
+    }   
+    
+    /**
+     * @expectedException \ntentan\panie\exceptions\ResolutionException
+     */
+    public function testEmptyResolves()
+    {
+        $this->container->resolve(Unknown::class);
+    }  
+    
+    public function testUnboundClass()
+    {
+        $object = $this->container->resolve(TestClass::class);
+        $this->assertInstanceOf(TestClass::class, $object);
+    }
+    
+    public function testFactories()
+    {
+        $this->container->bind(TestInterface::class)->to(function($container){
+            $this->assertInstanceOf(Container::class, $container);
+            return new TestClass();
+        });
+        $object = $this->container->resolve(TestInterface::class);
+        $this->assertInstanceOf(TestClass::class, $object);        
+    }
 }

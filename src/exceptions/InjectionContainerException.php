@@ -8,12 +8,14 @@
 
 namespace ntentan\panie\exceptions;
 
+use Psr\Container\ContainerExceptionInterface;
+
 /**
  * Description of DIContainerException
  *
  * @author ekow
  */
-class InjectionContainerException extends \Exception
+class InjectionContainerException extends \Exception implements ContainerExceptionInterface
 {
     //put your code here
 }
