@@ -163,11 +163,11 @@ class Container implements ContainerInterface
      * Returns a singleton of a given bound type.
      * 
      * @param string $type
-     * @param string $class
+     * @param mixed $class
      * @param array $constructorArguments
      * @return mixed
      */
-    private function getSingletonInstance(string $type, string $class, array $constructorArguments)
+    private function getSingletonInstance(string $type, $class, array $constructorArguments)
     {
         if (!isset($this->singletons[$type])) {
             $this->singletons[$type] = $this->getInstance($class, $constructorArguments);
