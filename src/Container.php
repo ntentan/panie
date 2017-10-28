@@ -153,7 +153,8 @@ class Container implements ContainerInterface
             if (isset($methodArguments[$parameter->getName()])) {
                 $argumentValues[] = $this->resolveArgument($methodArguments[$parameter->getName()], $className);
             } else {
-                $argumentValues[] = $className ? $this->resolve($className) : $parameter->getDefaultValue();
+                $argumentValues[] = $className ? $this->resolve($className) :
+                    ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null);
             }
         }
         return $argumentValues;
