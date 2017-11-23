@@ -71,7 +71,7 @@ class Container implements ContainerInterface
     /**
      * Pass an array of bindings to the container.
      * 
-     * @param type $bindings
+     * @param array $bindings
      */
     public function setup($bindings) : void
     {
