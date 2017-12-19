@@ -50,19 +50,6 @@ class Bindings
     }
 
     /**
-     * Registers a property to be assigned a value when an instance is created for the current active binding.
-     *
-     * @param string $property
-     * @param string $value
-     * @return self
-     */
-    public function setProperty(string $property, string $value)
-    {
-        $this->bindings[$this->activeKey]['sets'][$property] = $value;
-        return $this;
-    }
-
-    /**
      * Provides a concrete class or factory function to which the currently selected binding should be linked.
      *
      * @param mixed $value
@@ -131,18 +118,6 @@ class Bindings
             }
         } else {
             $this->bindings[$this->activeKey]['calls'] = [];
-        }
-        
-        if(isset($binding['sets'])){
-            foreach($binding['sets'] as $property => $parameters) {
-                if(is_numeric($property)) {
-                    $property = $parameters;
-                    $parameters = [];
-                } 
-                $this->setProperty($property, $parameters);
-            }
-        } else {
-            $this->bindings[$this->activeKey]['sets'] = [];
         }
 
         $this->asSingleton($binding['singleton'] ?? false);
