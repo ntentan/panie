@@ -14,12 +14,14 @@ class Container implements ContainerInterface
 
     /**
      * Holds all bindings defined.
+     *
      * @var Bindings 
      */
     private $bindings;
     
     /**
      * Holds instances of all singletons.
+     *
      * @var array
      */
     private $singletons = [];
@@ -48,6 +50,7 @@ class Container implements ContainerInterface
 
     /**
      * Starts the process of defining a binding.
+     * This method selects an active binding for the internal bindings object.
      * 
      * @param string $type
      * @return \ntentan\panie\Bindings
@@ -71,9 +74,9 @@ class Container implements ContainerInterface
     /**
      * Pass an array of bindings to the container.
      * 
-     * @param type $bindings
+     * @param array $bindings
      */
-    public function setup($bindings) : void
+    public function setup(array $bindings) : void
     {
         $this->bindings->merge($bindings);
     }
@@ -110,9 +113,10 @@ class Container implements ContainerInterface
 
     /**
      * Returns an instance of the type requested if this type (which was requested) is defined in the container.
-     * 
+     *
      * @param string $type
      * @return mixed
+     * @throws exceptions\ResolutionException
      */
     public function get($type)
     {
@@ -123,10 +127,11 @@ class Container implements ContainerInterface
      * Resolves an argument for a method or constructor.
      * If the argument passed is a string and the type hint of the argument points to an object, the string passed is
      * assumed to be a class binding and it is resolved.
-     * 
+     *
      * @param mixed $argument
      * @param string $class
      * @return mixed
+     * @throws exceptions\ResolutionException
      */
     private function resolveArgument($argument, $class)
     {
@@ -138,10 +143,11 @@ class Container implements ContainerInterface
 
     /**
      * Resolves all the arguments of a method or constructor.
-     * 
+     *
      * @param \ReflectionMethod $method
      * @param array $methodArguments
      * @return array
+     * @throws exceptions\ResolutionException
      */
     private function getMethodArguments(\ReflectionMethod $method, array $methodArguments) : array
     {
@@ -162,11 +168,12 @@ class Container implements ContainerInterface
 
     /**
      * Returns a singleton of a given bound type.
-     * 
+     *
      * @param string $type
      * @param mixed $class
      * @param array $constructorArguments
      * @return mixed
+     * @throws exceptions\ResolutionException
      */
     private function getSingletonInstance(string $type, $class, array $constructorArguments)
     {

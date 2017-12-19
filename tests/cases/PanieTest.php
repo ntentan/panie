@@ -1,6 +1,7 @@
 <?php
 namespace ntentan\panie\tests\cases;
 
+use ntentan\panie\tests\classes\SettersAndProperties;
 use ntentan\panie\tests\classes\TestInterface;
 use ntentan\panie\tests\classes\TestClass;
 use ntentan\panie\Container;
@@ -8,8 +9,11 @@ use ntentan\panie\tests\classes\Constructor;
 use ntentan\panie\tests\classes\AbstractClass;
 use PHPUnit\Framework\TestCase;
 
-class BindingTest extends TestCase
+class PanieTest extends TestCase
 {
+    /**
+     * @var Container
+     */
     private $container;
 
     public function setup() {
@@ -131,5 +135,42 @@ class BindingTest extends TestCase
         });
         $object = $this->container->resolve(TestInterface::class);
         $this->assertInstanceOf(TestClass::class, $object);        
+    }
+
+    public function testCalls()
+    {
+        $this->container->bind('setters')->to(SettersAndProperties::class)->call('setTest')->call('setOther', ['other' => 'yay!']);
+        $this->container->bind(TestInterface::class)->to(TestClass::class);
+        $object = $this->container->resolve('setters');
+        $this->assertInstanceOf(TestClass::class, $object->getTest());
+        $this->assertEquals('yay!', $object->getOther());
+    }
+
+    public function testCallsWithStringHints()
+    {
+        $this->container->bind('setters')
+            ->to(SettersAndProperties::class)
+            ->call('setTest', ['test' => TestClass::class]);
+        $object = $this->container->resolve('setters');
+        $this->assertInstanceOf(TestClass::class, $object->getTest());
+    }
+
+    public function testOverwrite()
+    {
+        $this->container->bind('some_service')->to(SettersAndProperties::class);
+        $this->assertInstanceOf(SettersAndProperties::class, $this->container->resolve('some_service'));
+        $this->container->bind('some_service')->to(TestClass::class);
+        $this->assertInstanceOf(TestClass::class, $this->container->resolve('some_service'));
+    }
+
+    public function testArraySetup()
+    {
+        $this->container->setup([
+            'setters' => [SettersAndProperties::class, 'calls' => ['setTest', 'setOther' => ['other' => 'yay!']]],
+            TestInterface::class => TestClass::class
+        ]);
+        $object = $this->container->resolve('setters');
+        $this->assertInstanceOf(TestClass::class, $object->getTest());
+        $this->assertEquals('yay!', $object->getOther());
     }
 }
