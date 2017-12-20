@@ -109,12 +109,15 @@ class Bindings
         }
         
         if(isset($binding['calls'])){
-            foreach($binding['calls'] as $call => $parameters) {
-                if(is_numeric($call)) {
-                    $call = $parameters;
+            foreach($binding['calls'] as $call) {
+                if(is_string($call)) {
+                    $method = $call;
                     $parameters = [];
-                } 
-                $this->call($call, $parameters);
+                } else if(is_array($call)) {
+                    $method = array_keys($call)[0];
+                    $parameters = $call[$method];
+                }
+                $this->call($method, $parameters);
             }
         } else {
             $this->bindings[$this->activeKey]['calls'] = [];
