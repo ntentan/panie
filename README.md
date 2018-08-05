@@ -32,4 +32,52 @@ class Foo
 ````
 
 ### Configuring
+In cases where we want to provide specific wiring, we can configure the container by passing a associative array of options to use when resolving certain class types.
+
+As a example, in the case where our `Foo` class takes a `BarInterface` iterface and we specifically want the `BarImplementation` class, we can wire the container as follows:
+
+````php
+<?php
+require "vendor/autoload.php";
+$container = new ntentan\panie\Container();
+$container->bind(BarInterface::class)->to(BarImplementation::class);
+$fooInstance = $container->get(Foo::class);
+````
+
+The container can also take a factory function that returns an instance of the required types. 
+
+````php
+<?php
+require "vendor/autoload.php";
+$container = new ntentan\panie\Container();
+$container->bind(BarInterface::class)->to(function(){
+    return new BarImplementation();
+});
+````
+
+You can also make the container maintain an internal singleton of a particular service by specifying the singleton flag when binding types.
+
+````php
+<?php
+require "vendor/autoload.php";
+$container = new ntentan\panie\Container();
+$container->bind(BarInterface::class)->to(BarImplementation::class)->asSingleton();
+$fooInstance = $container->get(Foo::class);
+````
+
+Apart from the `bind` and `to` functions, the container has a `setup` function that takes an associative array with wiring info for the container. In this case, a possible wiring could be ...
+
+````php
+$container->setup([
+    BarInterface::class => BarImplementation::class
+]);
+````
+
+... or for singletons and factories ...
+
+````php
+$container->setup([
+    BarInterface::class => [function(){ ... }, 'singleton' => true]
+]);
+````
 
