@@ -73,7 +73,11 @@ class Bindings
      */
     public function get(string $key)
     {
-        return $this->bindings[$key];
+        $binding = $this->bindings[$key];
+        if(!isset($binding['binding'])) {
+            $binding['binding'] = $key;
+        }
+        return $binding;
     }
 
     /**
