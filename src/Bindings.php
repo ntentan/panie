@@ -73,7 +73,11 @@ class Bindings
      */
     public function get(string $key)
     {
-        return $this->bindings[$key];
+        $binding = $this->bindings[$key];
+        if(!isset($binding['binding'])) {
+            $binding['binding'] = $key;
+        }
+        return $binding;
     }
 
     /**
@@ -109,12 +113,15 @@ class Bindings
         }
         
         if(isset($binding['calls'])){
-            foreach($binding['calls'] as $call => $parameters) {
-                if(is_numeric($call)) {
-                    $call = $parameters;
+            foreach($binding['calls'] as $key => $value) {
+                if(is_string($value)) {
+                    $method = $value;
                     $parameters = [];
-                } 
-                $this->call($call, $parameters);
+                } else if(is_array($value)) {
+                    $method = $key;
+                    $parameters = $value;
+                }
+                $this->call($method, $parameters);
             }
         } else {
             $this->bindings[$this->activeKey]['calls'] = [];
