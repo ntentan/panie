@@ -65,6 +65,11 @@ class Bindings
         return $this;
     }
 
+    public function withArgs(array $args)
+    {
+        $this->bindings[$this->activeKey]['args'] = $args;
+    }
+
     /**
      * Get the configuration of a binding.
      *
