@@ -32,7 +32,7 @@ class Foo
 ````
 
 ### Configuring
-In cases where we want to provide specific wiring, we can configure the container by passing a associative array of options to use when resolving certain class types.
+In cases where we want to provide specific wiring, we can configure the container by providing with options to use when resolving class types.
 
 As a example, in the case where our `Foo` class takes a `BarInterface` iterface and we specifically want the `BarImplementation` class, we can wire the container as follows:
 

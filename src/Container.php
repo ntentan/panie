@@ -85,7 +85,8 @@ class Container implements ContainerInterface
      * Resolves a type and returns an instance of an object of the requested type.
      * Optional constructor arguments could be provided to be used in initializing the object. This method throws a 
      * ResolutionException in cases where the type could not be resolved.
-     * 
+     *
+     * @todo Deprecate the use of the constructor arguments sometime soon
      * @param string $type
      * @param array $constructorArguments
      * @return mixed
@@ -100,7 +101,7 @@ class Container implements ContainerInterface
         if ($resolvedClass['singleton'] ?? false) {
             $instance = $this->getSingletonInstance($type, $resolvedClass['binding'], $constructorArguments);
         } else {
-            $instance = $this->getInstance($resolvedClass['binding'], $constructorArguments);
+            $instance = $this->getInstance($resolvedClass['binding'], $resolvedClass['args'] ?? $constructorArguments);
         }
         
         foreach($resolvedClass['calls'] ?? [] as $calls) {
