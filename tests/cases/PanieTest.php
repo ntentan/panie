@@ -8,6 +8,8 @@ use ntentan\panie\Container;
 use ntentan\panie\tests\classes\Constructor;
 use ntentan\panie\tests\classes\AbstractClass;
 use PHPUnit\Framework\TestCase;
+use ntentan\panie\exceptions\ResolutionException;
+
 
 class PanieTest extends TestCase
 {
@@ -16,10 +18,11 @@ class PanieTest extends TestCase
      */
     private $container;
 
-    public function setup() {
+    public function setup() : void
+    {
         $this->container = new Container();
     }
-
+        
     public function testBinding()
     {
         $this->container->bind(TestInterface::class)->to(TestClass::class);
@@ -52,19 +55,15 @@ class PanieTest extends TestCase
         $this->assertEquals(2, $object2->getValue());
     }    
 
-    /**
-     * @expectedException \ntentan\panie\exceptions\ResolutionException
-     */
     public function testResolutionException()
     {
+        $this->expectException(ResolutionException::class);
         $this->container->resolve('UnboundClass');
     }
 
-    /**
-     * @expectedException \ntentan\panie\exceptions\ResolutionException
-     */
     public function testAbstractResolutionException()
     {
+        $this->expectException(ResolutionException::class);
         $this->container->resolve(AbstractClass::class);
     }
 
@@ -113,11 +112,9 @@ class PanieTest extends TestCase
         $this->assertEquals(2, $object2->getValue());
     }   
     
-    /**
-     * @expectedException \ntentan\panie\exceptions\ResolutionException
-     */
     public function testEmptyResolves()
     {
+        $this->expectException(ResolutionException::class);
         $this->container->resolve(Unknown::class);
     }  
     

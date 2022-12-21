@@ -95,7 +95,7 @@ class Container implements ContainerInterface
     public function resolve(string $type, array $constructorArguments = [])
     {
         $resolvedClass = $this->getResolvedBinding($type);
-        if ($resolvedClass['binding'] === null) {
+        if ($resolvedClass === null || $resolvedClass['binding'] === null) {
             throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]");
         }
         if ($resolvedClass['singleton'] ?? false) {
@@ -155,7 +155,8 @@ class Container implements ContainerInterface
         $argumentValues = [];
         $parameters = $method->getParameters();
         foreach ($parameters as $parameter) {
-            $class = $parameter->getClass();
+            $type = $parameter->getType();
+            $class = $type && !$type->isBuiltin() ? new \ReflectionClass($type->getName()) : null;
             $className = $class ? $class->getName() : null;
             if (isset($methodArguments[$parameter->getName()])) {
                 $argumentValues[] = $this->resolveArgument($methodArguments[$parameter->getName()], $className);
