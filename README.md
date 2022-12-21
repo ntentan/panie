@@ -1,6 +1,6 @@
 Panie Injection Container
 =========================
-[![Build Status](https://travis-ci.org/ntentan/panie.svg)](https://travis-ci.org/ntentan/atiaa)
+[![Tests](https://github.com/ntentan/panie/actions/workflows/tests.yml/badge.svg)](https://github.com/ntentan/panie/actions/workflows/tests.yml)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ntentan/panie/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ntentan/panie/?branch=master)
 [![Code Coverage](https://scrutinizer-ci.com/g/ntentan/panie/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/ntentan/panie/?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/ntentan/panie/version.svg)](https://packagist.org/packages/ntentan/panie)
