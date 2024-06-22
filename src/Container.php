@@ -76,9 +76,10 @@ class Container implements ContainerInterface
      * 
      * @param array $bindings
      */
-    public function setup(array $bindings) : void
+    public function setup(array $bindings) : Container
     {
         $this->bindings->merge($bindings);
+        return $this;
     }
 
     /**
