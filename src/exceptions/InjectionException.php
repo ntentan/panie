@@ -15,7 +15,7 @@ use Psr\Container\ContainerExceptionInterface;
  *
  * @author ekow
  */
-class InjectionContainerException extends \Exception implements ContainerExceptionInterface
+class InjectionException extends \Exception implements ContainerExceptionInterface
 {
     //put your code here
 }

@@ -7,7 +7,7 @@ namespace ntentan\panie\exceptions;
  *
  * @author ekow
  */
-class ResolutionException extends InjectionContainerException
+class ResolutionException extends InjectionException
 {
     
 }

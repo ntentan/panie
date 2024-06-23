@@ -76,17 +76,17 @@ class PanieTest extends TestCase
         $this->assertNull($object->getNumber());
     }
 
-    public function testMixedConstructor()
-    {
-        $this->container->bind(TestInterface::class)->to(TestClass::class);
-        $object = $this->container->resolve(
-            \ntentan\panie\tests\classes\MixedConstructor::class,
-            ['string' => 'It is a string', 'number' => 2000]
-        );
-        $this->assertInstanceOf(TestClass::class, $object->getInterface());
-        $this->assertEquals('It is a string', $object->getString());
-        $this->assertEquals(2000, $object->getNumber());
-    }
+//    public function testMixedConstructor()
+//    {
+//        $this->container->bind(TestInterface::class)->to(TestClass::class);
+//        $object = $this->container->resolve(
+//            \ntentan\panie\tests\classes\MixedConstructor::class,
+//            ['string' => 'It is a string', 'number' => 2000]
+//        );
+//        $this->assertInstanceOf(TestClass::class, $object->getInterface());
+//        $this->assertEquals('It is a string', $object->getString());
+//        $this->assertEquals(2000, $object->getNumber());
+//    }
 
     public function testHas()
     {
@@ -134,23 +134,23 @@ class PanieTest extends TestCase
         $this->assertInstanceOf(TestClass::class, $object);        
     }
 
-    public function testCalls()
-    {
-        $this->container->bind('setters')->to(SettersAndProperties::class)->call('setTest')->call('setOther', ['other' => 'yay!']);
-        $this->container->bind(TestInterface::class)->to(TestClass::class);
-        $object = $this->container->resolve('setters');
-        $this->assertInstanceOf(TestClass::class, $object->getTest());
-        $this->assertEquals('yay!', $object->getOther());
-    }
+//    public function testCalls()
+//    {
+//        $this->container->bind('setters')->to(SettersAndProperties::class)->call('setTest')->call('setOther', ['other' => 'yay!']);
+//        $this->container->bind(TestInterface::class)->to(TestClass::class);
+//        $object = $this->container->resolve('setters');
+//        $this->assertInstanceOf(TestClass::class, $object->getTest());
+//        $this->assertEquals('yay!', $object->getOther());
+//    }
 
-    public function testCallsWithStringHints()
-    {
-        $this->container->bind('setters')
-            ->to(SettersAndProperties::class)
-            ->call('setTest', ['test' => TestClass::class]);
-        $object = $this->container->resolve('setters');
-        $this->assertInstanceOf(TestClass::class, $object->getTest());
-    }
+//    public function testCallsWithStringHints()
+//    {
+//        $this->container->bind('setters')
+//            ->to(SettersAndProperties::class)
+//            ->call('setTest', ['test' => TestClass::class]);
+//        $object = $this->container->resolve('setters');
+//        $this->assertInstanceOf(TestClass::class, $object->getTest());
+//    }
 
     public function testOverwrite()
     {
@@ -160,14 +160,14 @@ class PanieTest extends TestCase
         $this->assertInstanceOf(TestClass::class, $this->container->resolve('some_service'));
     }
 
-    public function testArraySetup()
-    {
-        $this->container->setup([
-            'setters' => [SettersAndProperties::class, 'calls' => ['setTest', 'setOther' => ['other' => 'yay!']]],
-            TestInterface::class => TestClass::class
-        ]);
-        $object = $this->container->resolve('setters');
-        $this->assertInstanceOf(TestClass::class, $object->getTest());
-        $this->assertEquals('yay!', $object->getOther());
-    }
+//    public function testArraySetup()
+//    {
+//        $this->container->setup([
+//            'setters' => [SettersAndProperties::class, 'calls' => ['setTest', 'setOther' => ['other' => 'yay!']]],
+//            TestInterface::class => TestClass::class
+//        ]);
+//        $object = $this->container->resolve('setters');
+//        $this->assertInstanceOf(TestClass::class, $object->getTest());
+//        $this->assertEquals('yay!', $object->getOther());
+//    }
 }

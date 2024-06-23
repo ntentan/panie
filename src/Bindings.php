@@ -28,7 +28,7 @@ class Bindings
      * @param $activeKey
      * @return self
      */
-    public function setActiveKey(string $activeKey) : self
+    public function setActiveKey(string $activeKey) : Bindings
     {
         $this->activeKey = $activeKey;
         return $this;
@@ -43,7 +43,7 @@ class Bindings
      * @param array $parameters
      * @return self
      */
-    public function call(string $method, array $parameters = []) : self
+    public function call(string $method, array $parameters = []) : Bindings
     {
         $this->bindings[$this->activeKey]['calls'][] = [$method, $parameters];
         return $this;
@@ -55,7 +55,7 @@ class Bindings
      * @param mixed $value
      * @return self
      */
-    public function to($value)
+    public function to($value): Bindings
     {
         if(isset($this->bindings[$this->activeKey])) {
             $this->bindings[$this->activeKey]['binding'] = $value;
@@ -65,10 +65,10 @@ class Bindings
         return $this;
     }
 
-    public function withArgs(array $args)
-    {
-        $this->bindings[$this->activeKey]['args'] = $args;
-    }
+//    public function withArgs(array $args): void
+//    {
+//        $this->bindings[$this->activeKey]['args'] = $args;
+//    }
 
     /**
      * Get the configuration of a binding.
@@ -76,7 +76,7 @@ class Bindings
      * @param string $key
      * @return mixed
      */
-    public function get(string $key)
+    public function get(string $key): array
     {
         $binding = $this->bindings[$key];
         if(!isset($binding['binding'])) {
@@ -91,7 +91,7 @@ class Bindings
      * @param string $key
      * @return bool
      */
-    public function has($key)
+    public function has($key): bool
     {
         return isset($this->bindings[$key]);
     }
@@ -101,7 +101,7 @@ class Bindings
      *
      * @param bool $singleton
      */
-    public function asSingleton($singleton = true)
+    public function asSingleton($singleton = true): void
     {
         $this->bindings[$this->activeKey]['singleton'] = $singleton;
     }
@@ -111,7 +111,7 @@ class Bindings
      *
      * @param array $binding
      */
-    private function setArrayBinding(array $binding)
+    private function setArrayBinding(array $binding): void
     {
         if(isset($binding[0])) {
             $this->to($binding[0]);
@@ -140,7 +140,7 @@ class Bindings
      *
      * @param array $bindings
      */
-    public function merge(array $bindings)
+    public function merge(array $bindings): void
     {
         foreach($bindings as $key => $binding) {
             $this->activeKey = $key;
@@ -151,5 +151,10 @@ class Bindings
             }
         }
     }
-
+    
+    protected function provide(string $type, string $name): Bindings
+    {
+        $this->activeKey = "$name||$type";
+        return $this;
+    }
 }

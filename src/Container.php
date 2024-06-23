@@ -13,22 +13,34 @@ class Container implements ContainerInterface
 {
 
     /**
-     * Holds all bindings defined.
+     * Holds all defined class bindings.
      *
      * @var Bindings 
      */
-    private $bindings;
+    private Bindings $bindings;
     
     /**
      * Holds instances of all singletons.
      *
      * @var array
      */
-    private $singletons = [];
+    private array $singletons = [];
+    
+    /**
+     * A flag to determine whether to inject objects into symbols with attributes.
+     * 
+     * @var bool
+     */
+    private bool $useAttribute;
 
     public function __construct()
     {
         $this->bindings = new Bindings();
+    }
+    
+    public function useAttribute(bool $useAttribute = true): void
+    {
+        $this->useAttribute = $useAttribute;
     }
 
     /**
@@ -37,7 +49,7 @@ class Container implements ContainerInterface
      * @param string $class
      * @return array|null The name of the class detected or null
      */
-    private function getResolvedBinding(string $class)
+    private function getResolvedBinding(string $class) : ?array
     {
         $bound = null;
         if ($this->bindings->has($class)) {
@@ -58,6 +70,11 @@ class Container implements ContainerInterface
     public function bind(string $type) : Bindings
     {
         return $this->bindings->setActiveKey($type);
+    }
+    
+    public function provide(string $type, string $name): Bindings
+    {
+        return $this->bindings->provide($type, $name);
     }
 
     /**
@@ -93,16 +110,16 @@ class Container implements ContainerInterface
      * @return mixed
      * @throws exceptions\ResolutionException
      */
-    public function resolve(string $type, array $constructorArguments = [])
+    public function resolve(string $type) : mixed
     {
         $resolvedClass = $this->getResolvedBinding($type);
         if ($resolvedClass === null || $resolvedClass['binding'] === null) {
             throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]");
         }
         if ($resolvedClass['singleton'] ?? false) {
-            $instance = $this->getSingletonInstance($type, $resolvedClass['binding'], $constructorArguments);
+            $instance = $this->getSingletonInstance($type, $resolvedClass['binding']);
         } else {
-            $instance = $this->getInstance($resolvedClass['binding'], $resolvedClass['args'] ?? $constructorArguments);
+            $instance = $this->getInstance($resolvedClass['binding']);
         }
         
         foreach($resolvedClass['calls'] ?? [] as $calls) {
@@ -114,7 +131,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Returns an instance of the type requested if this type (which was requested) is defined in the container.
+     * Returns an object of the type requested, provided the container is adequately configured.
      *
      * @param string $type
      * @return mixed
@@ -151,7 +168,7 @@ class Container implements ContainerInterface
      * @return array
      * @throws exceptions\ResolutionException
      */
-    private function getMethodArguments(\ReflectionMethod $method, array $methodArguments) : array
+    private function getMethodArguments(\ReflectionMethod $method) : array
     {
         $argumentValues = [];
         $parameters = $method->getParameters();
@@ -174,32 +191,48 @@ class Container implements ContainerInterface
      *
      * @param string $type
      * @param mixed $class
-     * @param array $constructorArguments
      * @return mixed
      * @throws exceptions\ResolutionException
      */
-    private function getSingletonInstance(string $type, $class, array $constructorArguments)
+    private function getSingletonInstance(string $type, $class)
     {
         if (!isset($this->singletons[$type])) {
-            $this->singletons[$type] = $this->getInstance($class, $constructorArguments);
+            $this->singletons[$type] = $this->getInstance($class);
         }
         return $this->singletons[$type];
+    }
+    
+    private function injectAttributed(mixed $instance, \ReflectionClass $reflection): void
+    {
+        // Properties
+        foreach($reflection->getProperties() as $property) {
+            if (count($property->getAttributes(Inject::class)) == 0 ) {
+                continue;
+            }
+            $type = $property->getType();
+            if ($type instanceof \ReflectionNamedType) {
+                $property->setValue($instance, $this->resolve($type->getName()));
+            } else {
+                throw new exceptions\InjectionException("Only properties with single named types can be injected with values");
+            }
+        }
     }
 
     /**
      * Returns an instance of a class.
      * 
-     * @param string|closure $className
+     * @param string|closure $class
      * @param array $constructorArguments
      * @return mixed
      * @throws exceptions\ResolutionException
      */
-    private function getInstance($className, array $constructorArguments = [])
+    private function getInstance(string|callable $class): mixed
     {
-        if (is_callable($className)) {
-            return $className($this);
+        // If the class is a function call it as a factory.
+        if (is_callable($class)) {
+            return $class($this);
         }
-        $reflection = new \ReflectionClass($className);
+        $reflection = new \ReflectionClass($class);
         if ($reflection->isAbstract()) {
             throw new exceptions\ResolutionException(
             "Abstract class {$reflection->getName()} cannot be instantiated. "
@@ -207,6 +240,10 @@ class Container implements ContainerInterface
             );
         }
         $constructor = $reflection->getConstructor();
-        return $reflection->newInstanceArgs($constructor ? $this->getMethodArguments($constructor, $constructorArguments) : []);
+        $instance = $reflection->newInstanceArgs($constructor ? $this->getMethodArguments($constructor) : []);
+        
+        $this->injectAttributed($instance, $reflection);
+        
+        return $instance;
     }
 }
