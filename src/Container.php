@@ -134,24 +134,6 @@ class Container implements ContainerInterface
     }
 
     /**
-     * Resolves an argument for a method or constructor.
-     * If the argument passed is a string and the type hint of the argument points to an object, the string passed is
-     * assumed to be a class binding and it is resolved.
-     *
-     * @param mixed $argument
-     * @param string $class
-     * @return mixed
-     * @throws exceptions\ResolutionException
-     */
-    private function resolveArgument($argument, $class)
-    {
-        if($class && is_string($argument)) {
-            return $this->resolve($argument);
-        }
-        return $argument;
-    }
-
-    /**
      * Resolves all the arguments of a method or constructor.
      *
      * @param \ReflectionMethod $method
