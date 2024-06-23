@@ -9,11 +9,11 @@ namespace ntentan\panie\tests\classes;
  */
 class MixedConstructor
 {
-    private $interface;
-    private $string;
-    private $number;
+    private TestInterface $interface;
+    private string $string;
+    private int $number;
     
-    public function __construct(TestInterface $interface, $string, $number)
+    public function __construct(TestInterface $interface, string $string, int $number)
     {
         $this->interface = $interface;
         $this->string = $string;

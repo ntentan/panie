@@ -55,7 +55,7 @@ class Bindings
      * @param mixed $value
      * @return self
      */
-    public function to($value): Bindings
+    public function to(string|array|callable $value): Bindings
     {
         if(isset($this->bindings[$this->activeKey])) {
             $this->bindings[$this->activeKey]['binding'] = $value;
@@ -64,11 +64,6 @@ class Bindings
         }
         return $this;
     }
-
-//    public function withArgs(array $args): void
-//    {
-//        $this->bindings[$this->activeKey]['args'] = $args;
-//    }
 
     /**
      * Get the configuration of a binding.
@@ -152,9 +147,14 @@ class Bindings
         }
     }
     
-    protected function provide(string $type, string $name): Bindings
+    public function provide(string $type, string $name): Bindings
     {
-        $this->activeKey = "$name||$type";
+        $this->activeKey = "$$name:$type";
         return $this;
+    }
+    
+    public function with(string|array|callable $value): Bindings
+    {
+        return $this->to($value);
     }
 }

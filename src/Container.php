@@ -37,11 +37,6 @@ class Container implements ContainerInterface
     {
         $this->bindings = new Bindings();
     }
-    
-    public function useAttribute(bool $useAttribute = true): void
-    {
-        $this->useAttribute = $useAttribute;
-    }
 
     /**
      * Resolves names of items requested from the container to their correct binding definition.
@@ -106,13 +101,14 @@ class Container implements ContainerInterface
      *
      * @todo Deprecate the use of the constructor arguments sometime soon
      * @param string $type
+     * @param string $name
      * @param array $constructorArguments
      * @return mixed
      * @throws exceptions\ResolutionException
      */
-    public function resolve(string $type) : mixed
+    private function resolve(string $type, string $name = null) : mixed
     {
-        $resolvedClass = $this->getResolvedBinding($type);
+        $resolvedClass = $this->getResolvedBinding($name === null ? $type : "$$name:$type");
         if ($resolvedClass === null || $resolvedClass['binding'] === null) {
             throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]");
         }
@@ -120,11 +116,6 @@ class Container implements ContainerInterface
             $instance = $this->getSingletonInstance($type, $resolvedClass['binding']);
         } else {
             $instance = $this->getInstance($resolvedClass['binding']);
-        }
-        
-        foreach($resolvedClass['calls'] ?? [] as $calls) {
-            $method = new \ReflectionMethod($instance, $calls[0]);
-            $method->invokeArgs($instance, $this->getMethodArguments($method, $calls[1]));
         }
         
         return $instance;
@@ -174,13 +165,17 @@ class Container implements ContainerInterface
         $parameters = $method->getParameters();
         foreach ($parameters as $parameter) {
             $type = $parameter->getType();
-            $class = $type && !$type->isBuiltin() ? new \ReflectionClass($type->getName()) : null;
-            $className = $class ? $class->getName() : null;
-            if (isset($methodArguments[$parameter->getName()])) {
-                $argumentValues[] = $this->resolveArgument($methodArguments[$parameter->getName()], $className);
+            if ($type instanceof \ReflectionNamedType) {
+                
+                $class = $type && !$type->isBuiltin() ? new \ReflectionClass($type->getName()) : null;
+                $className = $class ? $class->getName() : null;
+                $argumentName = $parameter->getName();
+                $argumentValues[] = $this->bindings->has("$$argumentName:$type") 
+                        ? $this->resolve($className, $argumentName) 
+                        : $this->resolve($className);
+//                    ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null);
             } else {
-                $argumentValues[] = $className ? $this->resolve($className) :
-                    ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null);
+                throw new exceptions\InjectionException("Only properties with single named types can be injected with values.");
             }
         }
         return $argumentValues;
@@ -211,17 +206,29 @@ class Container implements ContainerInterface
             }
             $type = $property->getType();
             if ($type instanceof \ReflectionNamedType) {
-                $property->setValue($instance, $this->resolve($type->getName()));
+                $typeName = $type->getName();
+                $name = $property->getName();
+                $property->setValue($instance, 
+                    $this->bindings->has("$$name:$typeName") ? $this->resolve($typeName, $name) : $this->resolve($typeName)
+                );
             } else {
-                throw new exceptions\InjectionException("Only properties with single named types can be injected with values");
+                throw new exceptions\InjectionException("Only properties with single named types can be injected with values.");
             }
+        }
+        
+        // Methods
+        foreach($reflection->getMethods() as $method) {
+            if (count($method->getAttributes(Inject::class)) == 0) {
+                continue;
+            }
+            $method->invokeArgs($instance, $this->getMethodArguments($method));
         }
     }
 
     /**
      * Returns an instance of a class.
      * 
-     * @param string|closure $class
+     * @param string|callable $class
      * @param array $constructorArguments
      * @return mixed
      * @throws exceptions\ResolutionException

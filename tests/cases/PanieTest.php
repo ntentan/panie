@@ -26,10 +26,10 @@ class PanieTest extends TestCase
     public function testBinding()
     {
         $this->container->bind(TestInterface::class)->to(TestClass::class);
-        $object = $this->container->resolve(TestInterface::class);
+        $object = $this->container->get(TestInterface::class);
         $this->assertInstanceOf(TestClass::class, $object);
         $this->assertInstanceOf(TestInterface::class, $object);
-        $otherobject = $this->container->resolve(TestInterface::class);
+        $otherobject = $this->container->get(TestInterface::class);
         $object->setValue(2);
         $this->assertEquals(2, $object->getValue());
         $this->assertNotEquals(2, $otherobject->getValue());
@@ -38,7 +38,7 @@ class PanieTest extends TestCase
     public function testConstructorBinding()
     {
         $this->container->bind(TestInterface::class)->to(TestClass::class);
-        $object = $this->container->resolve(Constructor::class);
+        $object = $this->container->get(Constructor::class);
         $this->assertInstanceOf(Constructor::class, $object);
         $this->assertInstanceOf(TestClass::class, $object->getClass());
         $this->assertInstanceOf(TestClass::class, $object->getInterface());
@@ -48,8 +48,8 @@ class PanieTest extends TestCase
     public function testSingleton()
     {
         $this->container->bind(TestInterface::class)->to(TestClass::class)->asSingleton();
-        $object1 = $this->container->resolve(TestInterface::class);
-        $object2 = $this->container->resolve(TestInterface::class);
+        $object1 = $this->container->get(TestInterface::class);
+        $object2 = $this->container->get(TestInterface::class);
         $object1->setValue(2);
         $this->assertEquals(2, $object1->getValue());
         $this->assertEquals(2, $object2->getValue());
@@ -58,28 +58,28 @@ class PanieTest extends TestCase
     public function testResolutionException()
     {
         $this->expectException(ResolutionException::class);
-        $this->container->resolve('UnboundClass');
+        $this->container->get('UnboundClass');
     }
 
     public function testAbstractResolutionException()
     {
         $this->expectException(ResolutionException::class);
-        $this->container->resolve(AbstractClass::class);
+        $this->container->get(AbstractClass::class);
     }
 
-    public function testMixedConstructorNulls()
-    {
-        $this->container->bind(TestInterface::class)->to(TestClass::class);
-        $object = $this->container->resolve(\ntentan\panie\tests\classes\MixedConstructor::class);
-        $this->assertInstanceOf(TestClass::class, $object->getInterface());
-        $this->assertNull($object->getString());
-        $this->assertNull($object->getNumber());
-    }
+//    public function testMixedConstructorNulls()
+//    {
+//        $this->container->bind(TestInterface::class)->to(TestClass::class);
+//        $object = $this->container->get(\ntentan\panie\tests\classes\MixedConstructor::class);
+//        $this->assertInstanceOf(TestClass::class, $object->getInterface());
+//        $this->assertNull($object->getString());
+//        $this->assertNull($object->getNumber());
+//    }
 
 //    public function testMixedConstructor()
 //    {
 //        $this->container->bind(TestInterface::class)->to(TestClass::class);
-//        $object = $this->container->resolve(
+//        $object = $this->container->get(
 //            \ntentan\panie\tests\classes\MixedConstructor::class,
 //            ['string' => 'It is a string', 'number' => 2000]
 //        );
@@ -98,15 +98,15 @@ class PanieTest extends TestCase
     public function testSetup()
     {
         $this->container->setup([TestInterface::class => TestClass::class]);
-        $object = $this->container->resolve(TestClass::class);
+        $object = $this->container->get(TestClass::class);
         $this->assertInstanceOf(TestClass::class, $object);
     }
 
     public function testSetupSingleton()
     {
         $this->container->setup([TestInterface::class=>[TestClass::class, 'singleton' => true]]);
-        $object1 = $this->container->resolve(TestInterface::class);
-        $object2 = $this->container->resolve(TestInterface::class);
+        $object1 = $this->container->get(TestInterface::class);
+        $object2 = $this->container->get(TestInterface::class);
         $object1->setValue(2);
         $this->assertEquals(2, $object1->getValue());
         $this->assertEquals(2, $object2->getValue());
@@ -115,12 +115,12 @@ class PanieTest extends TestCase
     public function testEmptyResolves()
     {
         $this->expectException(ResolutionException::class);
-        $this->container->resolve(Unknown::class);
+        $this->container->get(Unknown::class);
     }  
     
     public function testUnboundClass()
     {
-        $object = $this->container->resolve(TestClass::class);
+        $object = $this->container->get(TestClass::class);
         $this->assertInstanceOf(TestClass::class, $object);
     }
     
@@ -130,7 +130,7 @@ class PanieTest extends TestCase
             $this->assertInstanceOf(Container::class, $container);
             return new TestClass();
         });
-        $object = $this->container->resolve(TestInterface::class);
+        $object = $this->container->get(TestInterface::class);
         $this->assertInstanceOf(TestClass::class, $object);        
     }
 
@@ -138,7 +138,7 @@ class PanieTest extends TestCase
 //    {
 //        $this->container->bind('setters')->to(SettersAndProperties::class)->call('setTest')->call('setOther', ['other' => 'yay!']);
 //        $this->container->bind(TestInterface::class)->to(TestClass::class);
-//        $object = $this->container->resolve('setters');
+//        $object = $this->container->get('setters');
 //        $this->assertInstanceOf(TestClass::class, $object->getTest());
 //        $this->assertEquals('yay!', $object->getOther());
 //    }
@@ -148,16 +148,16 @@ class PanieTest extends TestCase
 //        $this->container->bind('setters')
 //            ->to(SettersAndProperties::class)
 //            ->call('setTest', ['test' => TestClass::class]);
-//        $object = $this->container->resolve('setters');
+//        $object = $this->container->get('setters');
 //        $this->assertInstanceOf(TestClass::class, $object->getTest());
 //    }
 
     public function testOverwrite()
     {
         $this->container->bind('some_service')->to(SettersAndProperties::class);
-        $this->assertInstanceOf(SettersAndProperties::class, $this->container->resolve('some_service'));
+        $this->assertInstanceOf(SettersAndProperties::class, $this->container->get('some_service'));
         $this->container->bind('some_service')->to(TestClass::class);
-        $this->assertInstanceOf(TestClass::class, $this->container->resolve('some_service'));
+        $this->assertInstanceOf(TestClass::class, $this->container->get('some_service'));
     }
 
 //    public function testArraySetup()
@@ -166,7 +166,7 @@ class PanieTest extends TestCase
 //            'setters' => [SettersAndProperties::class, 'calls' => ['setTest', 'setOther' => ['other' => 'yay!']]],
 //            TestInterface::class => TestClass::class
 //        ]);
-//        $object = $this->container->resolve('setters');
+//        $object = $this->container->get('setters');
 //        $this->assertInstanceOf(TestClass::class, $object->getTest());
 //        $this->assertEquals('yay!', $object->getOther());
 //    }

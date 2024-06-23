@@ -7,6 +7,7 @@ use ntentan\panie\Container;
 use ntentan\panie\tests\classes\TestInterface;
 use ntentan\panie\tests\classes\TestClass;
 use ntentan\panie\tests\classes\InjectableProperties;
+use ntentan\panie\tests\classes\InjectableMethods;
 
 use PHPUnit\Framework\TestCase;
 
@@ -25,14 +26,22 @@ class InjectAttributeTest extends TestCase
     public function setup() : void
     {
         $this->container = new Container();
+        $this->container->bind(TestInterface::class)->to(TestClass::class);
     }
     
-    public function testAttributeBinding() 
+    public function testPropertyBinding() 
     {
-        $this->container->bind(TestInterface::class)->to(TestClass::class);
         $object = $this->container->get(InjectableProperties::class);
         $this->assertInstanceOf(TestClass::class, $object->publicInjected);
         $this->assertInstanceOf(TestClass::class, $object->getPrivate());
         $this->assertInstanceOf(TestClass::class, $object->getProtected());
+    }
+    
+    public function testMethodCalling()
+    {
+        $object = $this->container->get(InjectableMethods::class);
+        $this->assertInstanceOf(TestClass::class, $object->publicInjected);
+        $this->assertInstanceOf(TestClass::class, $object->getPrivate());
+        $this->assertInstanceOf(TestClass::class, $object->getProtected());        
     }
 }
