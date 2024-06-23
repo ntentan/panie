@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class ContainerInterfaceTest extends TestCase
 {
-    private $container;
+    private Container $container;
 
     public function setUp(): void
     {

@@ -13,11 +13,11 @@ class MixedConstructor
     private string $string;
     private int $number;
     
-    public function __construct(TestInterface $interface, string $string, int $number)
+    public function __construct(TestInterface $interface, string $stringValue, int $integerValue)
     {
         $this->interface = $interface;
-        $this->string = $string;
-        $this->number = $number;
+        $this->string = $stringValue;
+        $this->number = $integerValue;
     }
     
     public function getInterface()

@@ -21,7 +21,7 @@ class InjectAttributeTest extends TestCase
     /**
      * @var Container
      */
-    private $container;
+    private Container $container;
 
     public function setup() : void
     {

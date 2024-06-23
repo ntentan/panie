@@ -16,7 +16,7 @@ class PanieTest extends TestCase
     /**
      * @var Container
      */
-    private $container;
+    private Container $container;
 
     public function setup() : void
     {
@@ -67,27 +67,6 @@ class PanieTest extends TestCase
         $this->container->get(AbstractClass::class);
     }
 
-//    public function testMixedConstructorNulls()
-//    {
-//        $this->container->bind(TestInterface::class)->to(TestClass::class);
-//        $object = $this->container->get(\ntentan\panie\tests\classes\MixedConstructor::class);
-//        $this->assertInstanceOf(TestClass::class, $object->getInterface());
-//        $this->assertNull($object->getString());
-//        $this->assertNull($object->getNumber());
-//    }
-
-//    public function testMixedConstructor()
-//    {
-//        $this->container->bind(TestInterface::class)->to(TestClass::class);
-//        $object = $this->container->get(
-//            \ntentan\panie\tests\classes\MixedConstructor::class,
-//            ['string' => 'It is a string', 'number' => 2000]
-//        );
-//        $this->assertInstanceOf(TestClass::class, $object->getInterface());
-//        $this->assertEquals('It is a string', $object->getString());
-//        $this->assertEquals(2000, $object->getNumber());
-//    }
-
     public function testHas()
     {
         $this->container->bind(TestInterface::class)->to(TestClass::class);
@@ -134,24 +113,6 @@ class PanieTest extends TestCase
         $this->assertInstanceOf(TestClass::class, $object);        
     }
 
-//    public function testCalls()
-//    {
-//        $this->container->bind('setters')->to(SettersAndProperties::class)->call('setTest')->call('setOther', ['other' => 'yay!']);
-//        $this->container->bind(TestInterface::class)->to(TestClass::class);
-//        $object = $this->container->get('setters');
-//        $this->assertInstanceOf(TestClass::class, $object->getTest());
-//        $this->assertEquals('yay!', $object->getOther());
-//    }
-
-//    public function testCallsWithStringHints()
-//    {
-//        $this->container->bind('setters')
-//            ->to(SettersAndProperties::class)
-//            ->call('setTest', ['test' => TestClass::class]);
-//        $object = $this->container->get('setters');
-//        $this->assertInstanceOf(TestClass::class, $object->getTest());
-//    }
-
     public function testOverwrite()
     {
         $this->container->bind('some_service')->to(SettersAndProperties::class);
@@ -159,15 +120,4 @@ class PanieTest extends TestCase
         $this->container->bind('some_service')->to(TestClass::class);
         $this->assertInstanceOf(TestClass::class, $this->container->get('some_service'));
     }
-
-//    public function testArraySetup()
-//    {
-//        $this->container->setup([
-//            'setters' => [SettersAndProperties::class, 'calls' => ['setTest', 'setOther' => ['other' => 'yay!']]],
-//            TestInterface::class => TestClass::class
-//        ]);
-//        $object = $this->container->get('setters');
-//        $this->assertInstanceOf(TestClass::class, $object->getTest());
-//        $this->assertEquals('yay!', $object->getOther());
-//    }
 }

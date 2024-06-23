@@ -110,7 +110,7 @@ class Container implements ContainerInterface
     {
         $resolvedClass = $this->getResolvedBinding($name === null ? $type : "$$name:$type");
         if ($resolvedClass === null || $resolvedClass['binding'] === null) {
-            throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]");
+            throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]" . ($name !== null ? " for [$name]." : ""));
         }
         if ($resolvedClass['singleton'] ?? false) {
             $instance = $this->getSingletonInstance($type, $resolvedClass['binding']);
@@ -165,15 +165,12 @@ class Container implements ContainerInterface
         $parameters = $method->getParameters();
         foreach ($parameters as $parameter) {
             $type = $parameter->getType();
-            if ($type instanceof \ReflectionNamedType) {
-                
-                $class = $type && !$type->isBuiltin() ? new \ReflectionClass($type->getName()) : null;
-                $className = $class ? $class->getName() : null;
+            if ($type instanceof \ReflectionNamedType) {                
+                $className = $type->getName(); //isBuiltin() ? ; //$class ? $class->getName() : null;
                 $argumentName = $parameter->getName();
-                $argumentValues[] = $this->bindings->has("$$argumentName:$type") 
+                $argumentValues[] = $this->bindings->has("$$argumentName:$className") 
                         ? $this->resolve($className, $argumentName) 
                         : $this->resolve($className);
-//                    ($parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : null);
             } else {
                 throw new exceptions\InjectionException("Only properties with single named types can be injected with values.");
             }
