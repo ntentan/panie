@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Uncommited
+## v0.8.0 - 2024-06-23
 ### Added
 - An `Inject` attribute to force the injection of values all over the class. Values can now be injected into class properties, constructor arguments, and method arguments alike, regardless of access level (public, private, or protected).
 - A `provide()` ... `with()` construct to the binder. This allows injection of arbitrary constructor values, including primitively typed ones.
