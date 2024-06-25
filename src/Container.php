@@ -25,13 +25,6 @@ class Container implements ContainerInterface
      * @var array
      */
     private array $singletons = [];
-    
-    /**
-     * A flag to determine whether to inject objects into symbols with attributes.
-     * 
-     * @var bool
-     */
-    private bool $useAttribute;
 
     public function __construct()
     {
@@ -133,7 +126,7 @@ class Container implements ContainerInterface
     {
         $value = $this->resolve($type);
         if ($value === null) {
-            throw new exceptions\InjectionException("Could not resolve dependency of type [$type]");
+            throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]");
         }
         return $value;
     }
