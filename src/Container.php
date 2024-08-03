@@ -25,6 +25,12 @@ class Container implements ContainerInterface
      * @var array
      */
     private array $singletons = [];
+    
+    /**
+     * Keep track of the resolution path to help with debugging when there are failed resolutions.
+     * @var array
+     */
+    private array $resolutionPath = [];
 
     public function __construct()
     {
@@ -124,9 +130,11 @@ class Container implements ContainerInterface
      */
     public function get($type)
     {
+        $this->resolutionPath[] = $type;
         $value = $this->resolve($type);
+        array_pop($this->resolutionPath);
         if ($value === null) {
-            throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]");
+            throw new exceptions\ResolutionException("Could not resolve dependency of type [$type] for request: " . implode('->', $this->resolutionPath));
         }
         return $value;
     }
@@ -145,20 +153,21 @@ class Container implements ContainerInterface
         $parameters = $method->getParameters();
         foreach ($parameters as $parameter) {
             $type = $parameter->getType();
+            $argumentName = $parameter->getName();
+            
             if ($type instanceof \ReflectionNamedType) {                
-                $className = $type->getName(); //isBuiltin() ? ; //$class ? $class->getName() : null;
-                $argumentName = $parameter->getName();
+                $className = $type->getName();
                 $argumentValue = $this->bindings->has("$$argumentName:$className") 
                         ? $this->resolve($className, $argumentName) 
                         : $this->resolve($className);
                 if ($argumentValue === null && $parameter->isDefaultValueAvailable()) {
                     $argumentValue = $parameter->getDefaultValue();
                 } else if ($argumentValue === null) {
-                    throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of {$method->getDeclaringClass()->getName()}{$method->getName()}");
+                    throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of type {$className} for {$method->getDeclaringClass()->getName()}{$method->getName()}");
                 }
                 $argumentValues[]=$argumentValue;
             } else {
-                throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of {$method->getDeclaringClass()->getName()}{$method->getName()}");
+                throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of type {$type} for {$method->getDeclaringClass()->getName()}{$method->getName()}");
             }
         }
         return $argumentValues;
