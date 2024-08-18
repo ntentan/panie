@@ -97,7 +97,37 @@ class Bindings
             $this->to($binding[0]);
         }
 
+        if(isset($binding['calls'])){
+            foreach($binding['calls'] as $key => $call) {
+                if(is_string($call)) {
+                    $method = $call;
+                    $parameters = [];
+                } else if(is_array($call)) {
+                    $method = $key;
+                    $parameters = $call;
+                }
+                $this->call($method, $parameters);
+            }
+        } else {
+            $this->bindings[$this->activeKey]['calls'] = [];
+        }
+
         $this->asSingleton($binding['singleton'] ?? false);
+    }
+
+    /**
+     * Registers a method to be called when an instance is created for the current active binding.
+     * This method could be a setter or some other optional initialization method. Parameters for methods registered
+     * with call that have type hints are also injected.
+     *
+     * @param string $method
+     * @param array $parameters
+     * @return self
+     */
+    public function call(string $method, array $parameters = []) : Bindings
+    {
+        $this->bindings[$this->activeKey]['calls'][] = [$method, $parameters];
+        return $this;
     }
 
     /**

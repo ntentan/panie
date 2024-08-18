@@ -117,6 +117,11 @@ class Container implements ContainerInterface
         } else {
             $instance = $this->getInstance($resolvedClass['binding']);
         }
+
+        foreach($resolvedClass['calls'] ?? [] as $call) {
+            $method = new \ReflectionMethod($instance, $call[0]);
+            $method->invokeArgs($instance, $this->getMethodArguments($method, $call[1]));
+        }
         
         return $instance;
     }
@@ -188,38 +193,6 @@ class Container implements ContainerInterface
         }
         return $this->singletons[$type];
     }
-    
-    private function injectAttributed(mixed $instance, \ReflectionClass $reflection): void
-    {
-        // Properties
-        foreach($reflection->getProperties() as $property) {
-            if (count($property->getAttributes(Inject::class)) == 0 ) {
-                continue;
-            }
-            $type = $property->getType();
-            if ($type instanceof \ReflectionNamedType) {
-                $typeName = $type->getName();
-                $name = $property->getName();
-                $propertyValue = $this->bindings->has("$$name:$typeName") 
-                        ? $this->resolve($typeName, $name) 
-                        : $this->resolve($typeName);
-                if($propertyValue === null) {
-                    throw new exceptions\InjectionException("Failed to resolve a value for property.");
-                }
-                $property->setValue($instance, $propertyValue);
-            } else {
-                throw new exceptions\InjectionException("Only properties with single named types can be injected with values.");
-            }
-        }
-        
-        // Methods
-        foreach($reflection->getMethods() as $method) {
-            if (count($method->getAttributes(Inject::class)) == 0) {
-                continue;
-            }
-            $method->invokeArgs($instance, $this->getMethodArguments($method));
-        }
-    }
 
     /**
      * Returns an instance of a class.
@@ -244,9 +217,6 @@ class Container implements ContainerInterface
         }
         $constructor = $reflection->getConstructor();
         $instance = $reflection->newInstanceArgs($constructor ? $this->getMethodArguments($constructor) : []);
-        
-        $this->injectAttributed($instance, $reflection);
-        
         return $instance;
     }
 }
