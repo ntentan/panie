@@ -1,4 +1,7 @@
 # CHANGELOG
+## v0.9.0 - 2025-01-18
+### Removed
+- The `Inject` attribute has been removed because it's no longer required.
 
 ## v0.8.0 - 2024-06-23
 ### Added
