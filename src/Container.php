@@ -105,7 +105,7 @@ class Container implements ContainerInterface
      * @return mixed
      * @throws exceptions\ResolutionException
      */
-    private function resolve(string $type, string $name = null) : mixed
+    private function resolve(string $type, ?string $name = null) : mixed
     {
         $resolvedClass = $this->getResolvedBinding($name === null ? $type : "$$name:$type");
         if ($resolvedClass === null || $resolvedClass['binding'] === null) {
