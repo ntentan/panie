@@ -107,7 +107,8 @@ class Container implements ContainerInterface
      */
     private function resolve(string $type, ?string $name = null) : mixed
     {
-        $resolvedClass = $this->getResolvedBinding($name === null ? $type : "$$name:$type");
+        $type = $name === null ? $type : "$$name:$type";
+        $resolvedClass = $this->getResolvedBinding($type);
         if ($resolvedClass === null || $resolvedClass['binding'] === null) {
             return null;
             //throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]" . ($name !== null ? " for [$name]." : ""));
