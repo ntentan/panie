@@ -1,3 +1,7 @@
+v0.9.2 - 2025-04-13
+===================
+- Fixes a tiny bug in the resolution of built-in types.
+
 v0.9.1 - 2025-04-05
 ===================
 - Emphasizes nullability of strings in the `resolve` function.

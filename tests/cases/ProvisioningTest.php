@@ -21,14 +21,14 @@ class ProvisioningTest extends TestCase
     public function setup() : void
     {
         $this->container = new Container();
-        $this->container
-            ->bind(TestInterface::class)->to(TestClass::class)
-                ->provide("string", "stringValue")->with(fn() => "string value correctly set")
-                ->provide("int", "integerValue")->with(fn() => 240142);
     }
     
     public function testInjection() 
     {
+        $this->container
+            ->bind(TestInterface::class)->to(TestClass::class)
+            ->provide("string", "stringValue")->with(fn() => "string value correctly set")
+            ->provide("int", "integerValue")->with(fn() => 240142);
        $object = $this->container->get(MixedConstructor::class);
        $this->assertInstanceOf(TestClass::class, $object->getInterface());
        $this->assertEquals(240142, $object->getNumber());
