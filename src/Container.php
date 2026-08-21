@@ -160,18 +160,24 @@ class Container implements ContainerInterface
         foreach ($parameters as $parameter) {
             $type = $parameter->getType();
             $argumentName = $parameter->getName();
+
+            if ($parameter->isVariadic()) {
+                continue;
+            }
             
-            if ($type instanceof \ReflectionNamedType) {                
+            if ($type instanceof \ReflectionNamedType) {
                 $className = $type->getName();
-                $argumentValue = $this->bindings->has("$$argumentName:$className") 
-                        ? $this->resolve($className, $argumentName) 
-                        : $this->resolve($className);
+                $argumentValue = $this->bindings->has("$$argumentName:$className")
+                    ? $this->resolve($className, $argumentName)
+                    : $this->resolve($className);
                 if ($argumentValue === null && $parameter->isDefaultValueAvailable()) {
                     $argumentValue = $parameter->getDefaultValue();
                 } else if ($argumentValue === null) {
                     throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of type {$className} for {$method->getDeclaringClass()->getName()}{$method->getName()}");
                 }
-                $argumentValues[]=$argumentValue;
+                $argumentValues[] = $argumentValue;
+            } else if ($parameter->isDefaultValueAvailable()) {
+                $argumentValues[] = $parameter->getDefaultValue();
             } else {
                 throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of type {$type} for {$method->getDeclaringClass()->getName()}{$method->getName()}");
             }
