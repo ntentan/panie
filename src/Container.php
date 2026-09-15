@@ -111,7 +111,6 @@ class Container implements ContainerInterface
         $resolvedClass = $this->getResolvedBinding($type);
         if ($resolvedClass === null || $resolvedClass['binding'] === null) {
             return null;
-            //throw new exceptions\ResolutionException("Could not resolve dependency of type [$type]" . ($name !== null ? " for [$name]." : ""));
         }
         if ($resolvedClass['singleton'] ?? false) {
             $instance = $this->getSingletonInstance($type, $resolvedClass['binding']);
