@@ -2,6 +2,7 @@
 
 namespace ntentan\panie;
 
+use ntentan\panie\exceptions\InjectionException;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -100,12 +101,10 @@ class Container implements ContainerInterface
      *
      * @todo Deprecate the use of the constructor arguments sometime soon
      * @param string $type
-     * @param string $name
-     * @param array $constructorArguments
+     * @param ?string $name
      * @return mixed
-     * @throws exceptions\ResolutionException
      */
-    private function resolve(string $type, ?string $name = null) : mixed
+    private function resolve(string $type, ?string $name = null, array $parameterBindings = []) : mixed
     {
         $type = $name === null ? $type : "$$name:$type";
         $resolvedClass = $this->getResolvedBinding($type);
@@ -113,9 +112,12 @@ class Container implements ContainerInterface
             return null;
         }
         if ($resolvedClass['singleton'] ?? false) {
+            if (!empty($parameterBindings)) {
+                throw new InjectionException("Cannot perform inline injections with singletons");
+            }
             $instance = $this->getSingletonInstance($type, $resolvedClass['binding']);
         } else {
-            $instance = $this->getInstance($resolvedClass['binding']);
+            $instance = $this->getInstance($resolvedClass['binding'], $parameterBindings);
         }
 
         foreach($resolvedClass['calls'] ?? [] as $call) {
@@ -144,6 +146,21 @@ class Container implements ContainerInterface
         return $value;
     }
 
+    private function getExplicitConstructorArguments(\ReflectionParameter $parameter): mixed
+    {
+        $arguments = [];
+        $attributes = $parameter->getAttributes();
+        if (count($attributes) > 0) {
+            foreach ($attributes as $attribute) {
+                if (is_a($attribute->getName(), ConstructWith::class, true)) {
+                    $instance = $attribute->newInstance();
+                    $arguments[$instance->argument] = $instance->value;
+                }
+            }
+        }
+        return $arguments;
+    }
+
     /**
      * Resolves all the arguments of a method or constructor.
      *
@@ -152,7 +169,7 @@ class Container implements ContainerInterface
      * @return array
      * @throws exceptions\ResolutionException
      */
-    private function getMethodArguments(\ReflectionMethod $method) : array
+    public function getMethodArguments(\ReflectionMethod $method, array $localBindings = []) : array
     {
         $argumentValues = [];
         $parameters = $method->getParameters();
@@ -166,13 +183,18 @@ class Container implements ContainerInterface
             
             if ($type instanceof \ReflectionNamedType) {
                 $className = $type->getName();
-                $argumentValue = $this->bindings->has("$$argumentName:$className")
-                    ? $this->resolve($className, $argumentName)
-                    : $this->resolve($className);
-                if ($argumentValue === null && $parameter->isDefaultValueAvailable()) {
-                    $argumentValue = $parameter->getDefaultValue();
-                } else if ($argumentValue === null) {
-                    throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of type {$className} for {$method->getDeclaringClass()->getName()}{$method->getName()}");
+                if (isset($localBindings[$argumentName])) {
+                    $argumentValues[] = $localBindings[$argumentName];
+                } else {
+                    $parameterBindings = $this->getExplicitConstructorArguments($parameter);
+                    $argumentValue = $this->bindings->has("$$argumentName:$className")
+                        ? $this->resolve($className, $argumentName, $parameterBindings)
+                        : $this->resolve($className, parameterBindings: $parameterBindings);
+                    if ($argumentValue === null && $parameter->isDefaultValueAvailable()) {
+                        $argumentValue = $parameter->getDefaultValue();
+                    } else if ($argumentValue === null && !$parameter->allowsNull()) {
+                        throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of type {$className} for {$method->getDeclaringClass()->getName()}{$method->getName()}");
+                    }
                 }
                 $argumentValues[] = $argumentValue;
             } else if ($parameter->isDefaultValueAvailable()) {
@@ -195,7 +217,7 @@ class Container implements ContainerInterface
     private function getSingletonInstance(string $type, $class)
     {
         if (!isset($this->singletons[$type])) {
-            $this->singletons[$type] = $this->getInstance($class);
+            $this->singletons[$type] = $this->getInstance($class, []);
         }
         return $this->singletons[$type];
     }
@@ -208,7 +230,7 @@ class Container implements ContainerInterface
      * @return mixed
      * @throws exceptions\ResolutionException
      */
-    private function getInstance(string|callable $class): mixed
+    private function getInstance(string|callable $class, array $parameterBindings = []): mixed
     {
         // If the class is a function call it as a factory.
         if (is_callable($class)) {
@@ -222,7 +244,6 @@ class Container implements ContainerInterface
             );
         }
         $constructor = $reflection->getConstructor();
-        $instance = $reflection->newInstanceArgs($constructor ? $this->getMethodArguments($constructor) : []);
-        return $instance;
+        return $reflection->newInstanceArgs($constructor ? $this->getMethodArguments($constructor, $parameterBindings) : []);
     }
 }
