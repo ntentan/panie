@@ -3,6 +3,7 @@
 namespace ntentan\panie;
 
 use ntentan\panie\exceptions\InjectionException;
+use ntentan\panie\exceptions\ResolutionException;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -78,9 +79,9 @@ class Container implements ContainerInterface
      * @param string $type
      * @return bool
      */
-    public function has($type) : bool
+    public function has($id) : bool
     {
-        return $this->bindings->has($type);
+        return $this->bindings->has($id);
     }
 
     /**
@@ -106,6 +107,7 @@ class Container implements ContainerInterface
      */
     private function resolve(string $type, ?string $name = null, array $parameterBindings = []) : mixed
     {
+        $this->resolutionPath[] = $type;
         $type = $name === null ? $type : "$$name:$type";
         $resolvedClass = $this->getResolvedBinding($type);
         if ($resolvedClass === null || $resolvedClass['binding'] === null) {
@@ -124,7 +126,8 @@ class Container implements ContainerInterface
             $method = new \ReflectionMethod($instance, $call[0]);
             $method->invokeArgs($instance, $this->getMethodArguments($method, $call[1]));
         }
-        
+        array_pop($this->resolutionPath);
+
         return $instance;
     }
 
@@ -135,13 +138,11 @@ class Container implements ContainerInterface
      * @return mixed
      * @throws exceptions\ResolutionException
      */
-    public function get($type)
+    public function get($id)
     {
-        $this->resolutionPath[] = $type;
-        $value = $this->resolve($type);
-        array_pop($this->resolutionPath);
+        $value = $this->resolve($id);
         if ($value === null) {
-            throw new exceptions\ResolutionException("Could not resolve dependency of type [$type] for request: " . implode('->', $this->resolutionPath));
+            throw new exceptions\ResolutionException("Could not resolve dependency of type [$id] for request: " . implode('->', $this->resolutionPath));
         }
         return $value;
     }
@@ -165,9 +166,9 @@ class Container implements ContainerInterface
      * Resolves all the arguments of a method or constructor.
      *
      * @param \ReflectionMethod $method
-     * @param array $methodArguments
+     * @param array $localBindings
      * @return array
-     * @throws exceptions\ResolutionException
+     * @throws InjectionException
      */
     public function getMethodArguments(\ReflectionMethod $method, array $localBindings = []) : array
     {
@@ -193,7 +194,10 @@ class Container implements ContainerInterface
                     if ($argumentValue === null && $parameter->isDefaultValueAvailable()) {
                         $argumentValue = $parameter->getDefaultValue();
                     } else if ($argumentValue === null && !$parameter->allowsNull()) {
-                        throw new exceptions\InjectionException("Could not resolve a value for {$argumentName} of type {$className} for {$method->getDeclaringClass()->getName()}{$method->getName()}");
+                        throw new exceptions\InjectionException(
+                        "Could not resolve a value for [\${$argumentName}] of type [{$className}] for {$method->getDeclaringClass()->getName()}::{$method->getName()}()."
+                            . "Resolution hierarchy: " . implode(" > ", $this->resolutionPath)
+                        );
                     }
                 }
                 $argumentValues[] = $argumentValue;
@@ -224,11 +228,12 @@ class Container implements ContainerInterface
 
     /**
      * Returns an instance of a class.
-     * 
+     *
      * @param string|callable $class
-     * @param array $constructorArguments
+     * @param array $parameterBindings
      * @return mixed
-     * @throws exceptions\ResolutionException
+     * @throws \ReflectionException
+     * @throws ResolutionException
      */
     private function getInstance(string|callable $class, array $parameterBindings = []): mixed
     {
