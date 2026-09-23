@@ -185,7 +185,7 @@ class Container implements ContainerInterface
             if ($type instanceof \ReflectionNamedType) {
                 $className = $type->getName();
                 if (isset($localBindings[$argumentName])) {
-                    $argumentValues[] = $localBindings[$argumentName];
+                    $argumentValue = $localBindings[$argumentName];
                 } else {
                     $parameterBindings = $this->getExplicitConstructorArguments($parameter);
                     $argumentValue = $this->bindings->has("$$argumentName:$className")
@@ -245,7 +245,8 @@ class Container implements ContainerInterface
         if ($reflection->isAbstract()) {
             throw new exceptions\ResolutionException(
             "Abstract class {$reflection->getName()} cannot be instantiated. "
-            . "Please provide a binding to an implementation."
+                . "Please provide a binding to an implementation. Resolution hierarchy: "
+                . implode('>', $this->resolutionPath)
             );
         }
         $constructor = $reflection->getConstructor();
