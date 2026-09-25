@@ -11,9 +11,11 @@ jobs:
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
-          tools: composer
+          tools: composer, phpstan
       - name: Running composer
         run: composer install
+      - name: Running phpstan
+        run: phpstan analyse
       - name: Running php unit tests
         run: vendor/bin/phpunit  --coverage-clover coverage.clover -c tests/config.xml
       - name: Downloading Ocular Tool

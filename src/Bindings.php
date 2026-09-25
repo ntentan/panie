@@ -37,7 +37,7 @@ class Bindings
     /**
      * Provides a concrete class or factory function to which the currently selected binding should be linked.
      *
-     * @param mixed $value
+     * @param string|array|callable $value
      * @return self
      */
     public function to(string|array|callable $value): Bindings
@@ -54,7 +54,7 @@ class Bindings
      * Get the configuration of a binding.
      *
      * @param string $key
-     * @return mixed
+     * @return array
      */
     public function get(string $key): array
     {
@@ -105,6 +105,8 @@ class Bindings
                 } else if(is_array($call)) {
                     $method = $key;
                     $parameters = $call;
+                } else {
+                    throw new \InvalidArgumentException("Invalid call configuration for binding $this->activeKey. Calls must be an array of method names or an associative array of method names and parameters.");
                 }
                 $this->call($method, $parameters);
             }

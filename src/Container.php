@@ -76,7 +76,7 @@ class Container implements ContainerInterface
     /**
      * Returns true if type is found in container otherwise it returns false.
      * 
-     * @param string $type
+     * @param string $id
      * @return bool
      */
     public function has($id) : bool
@@ -134,7 +134,7 @@ class Container implements ContainerInterface
     /**
      * Returns an object of the type requested, provided the container is adequately configured.
      *
-     * @param string $type
+     * @param string $id
      * @return mixed
      * @throws exceptions\ResolutionException
      */

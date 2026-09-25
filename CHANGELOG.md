@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.10.0]
+## [v0.11.0] - 2026-09-25
+
+### Added
+- A `ConstructWith` attribute to specify explicit constructor arguments for dependencies.
+- Detailed resolution hierarchy in `InjectionException` and `ResolutionException` error messages when dependency resolution fails.
+- Resolution error reporting with resolution hierarchy when attempting to instantiate an abstract class without a binding.
+- Support for resolving nullable typed arguments to `null` when no binding or default value is available.
+
+### Changed
+- `Container::getMethodArguments()` is now public and accepts local parameter bindings.
+- Renamed parameter `$type` to `$id` in `Container::get()` and `Container::has()` to align with PSR-11.
+
+## [v0.10.0] - 2026-08-26
 
 ### Added
 - Support for variadic arguments in class constructors and methods by skipping them during resolution.
@@ -46,7 +58,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First release with a proper changelog.
 - The `withArgs()` method for constructor parameters.
 
-[Unreleased]: https://github.com/ntentan/panie/compare/v0.9.2...HEAD
+[Unreleased]: https://github.com/ntentan/panie/compare/v0.11.0...HEAD
+[v0.11.0]: https://github.com/ntentan/panie/compare/v0.10.0...v0.11.0
+[v0.10.0]: https://github.com/ntentan/panie/compare/v0.9.2...v0.10.0
 [v0.9.2]: https://github.com/ntentan/panie/compare/v0.9.1...v0.9.2
 [v0.9.1]: https://github.com/ntentan/panie/compare/v0.9.0...v0.9.1
 [v0.9.0]: https://github.com/ntentan/panie/compare/v0.8.0...v0.9.0
