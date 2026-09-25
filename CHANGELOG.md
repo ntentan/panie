@@ -12,10 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Detailed resolution hierarchy in `InjectionException` and `ResolutionException` error messages when dependency resolution fails.
 - Resolution error reporting with resolution hierarchy when attempting to instantiate an abstract class without a binding.
 - Support for resolving nullable typed arguments to `null` when no binding or default value is available.
+- PHPStan static analysis configuration (`phpstan.neon`) and integration into the GitHub Actions test workflow.
+- Validation for call configurations in `Bindings`, throwing an `InvalidArgumentException` on invalid call entries.
 
 ### Changed
 - `Container::getMethodArguments()` is now public and accepts local parameter bindings.
 - Renamed parameter `$type` to `$id` in `Container::get()` and `Container::has()` to align with PSR-11.
+- Added `phpstan/phpstan` to development dependencies and updated dependencies.
 
 ## [v0.10.0] - 2026-08-26
 
